@@ -6,6 +6,7 @@ import type { CSSResultGroup, TemplateResult } from 'lit';
 export interface SoSortableListItem {
   id: string;
   label: string;
+  dimmed?: boolean;
 }
 
 type DropPosition = 'top' | 'bottom';
@@ -38,7 +39,7 @@ export class SoSortableList extends LitElement {
 
     return html`
       <div
-        class="list-item ${isDragging ? 'dragging' : ''}"
+        class="list-item ${isDragging ? 'dragging' : ''} ${item.dimmed ? 'dimmed' : ''}"
         draggable="true"
         @dragstart=${(e: DragEvent) => this.onDragStart(e, item)}
         @dragend=${() => this.onDragEnd()}

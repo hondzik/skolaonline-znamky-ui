@@ -32,6 +32,10 @@ export const SoSortableListStyles = css`
     opacity: 0.5;
   }
 
+  .list-item.dimmed {
+    opacity: 0.45;
+  }
+
   .item-leading {
     flex-shrink: 0;
     display: flex;

@@ -1,7 +1,8 @@
 {
   "card": {
     "no_entity": "Select an entity from the Škola OnLine – Marks integration.",
-    "history_button": "Full history",
+    "refresh": "Refresh marks",
+    "no_marks": "No marks yet",
     "history_empty": "No marks to display.",
     "history_error": "Failed to load mark history."
   },
@@ -9,12 +10,17 @@
     "entity": "Entity (child)",
     "title": "Custom title (optional)",
     "title_font_size": "Title font size",
+    "subject_font_size": "Subject name font size",
     "marks_font_size": "Marks font size",
+    "border_width": "Subject color bar width",
     "size_by_weight": "Size by weight",
     "size_by_weight_description": "Scales a mark's chip size based on its weight relative to the average weight of the other marks (works regardless of which weight scale the school uses).",
+    "show_empty_subjects": "Show subjects with no marks yet",
     "subjects_heading": "Subject order & colors",
     "subjects_description": "Drag to reorder subjects on the card, click the color dot to set a subject's color.",
     "reset_color": "Reset custom color",
+    "hide_subject": "Hide subject",
+    "show_subject": "Show subject",
     "no_entity": "Select an entity first."
   }
 }

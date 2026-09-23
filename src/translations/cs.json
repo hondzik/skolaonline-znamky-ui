@@ -1,7 +1,8 @@
 {
   "card": {
     "no_entity": "Vyberte entitu integrace Škola OnLine – Známky.",
-    "history_button": "Celá historie",
+    "refresh": "Aktualizovat známky",
+    "no_marks": "Zatím žádné známky",
     "history_empty": "Žádné známky k zobrazení.",
     "history_error": "Nepodařilo se načíst historii známek."
   },
@@ -9,12 +10,17 @@
     "entity": "Entita (dítě)",
     "title": "Vlastní název (nepovinné)",
     "title_font_size": "Velikost písma nadpisu",
+    "subject_font_size": "Velikost písma názvu předmětu",
     "marks_font_size": "Velikost písma známek",
+    "border_width": "Šířka barevného pruhu předmětu",
     "size_by_weight": "Velikost podle váhy",
     "size_by_weight_description": "Zvětší čtvereček známky podle její váhy vůči průměrné váze ostatních známek (funguje bez ohledu na to, jakou stupnici vah škola používá).",
+    "show_empty_subjects": "Zobrazovat předměty bez existujících známek",
     "subjects_heading": "Pořadí a barvy předmětů",
     "subjects_description": "Přetažením změníte pořadí předmětů na kartě, kliknutím na barevný kroužek nastavíte barvu předmětu.",
     "reset_color": "Zrušit vlastní barvu",
+    "hide_subject": "Skrýt předmět",
+    "show_subject": "Zobrazit předmět",
     "no_entity": "Nejprve vyberte entitu."
   }
 }

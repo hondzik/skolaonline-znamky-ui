@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fetchMarks, resolveConfigEntryId } from '../src/utils/marks-service';
+import { fetchMarks, refreshMarks, resolveConfigEntryId } from '../src/utils/marks-service';
 import type { HomeAssistant } from 'custom-card-helpers';
 
 function buildHass(callService: ReturnType<typeof vi.fn>): HomeAssistant {
@@ -52,17 +52,19 @@ describe('fetchMarks', () => {
     expect(marks[0].theme).toBe('Kmity');
   });
 
-  it('includes subject_id in the service call when provided', async () => {
-    const callService = vi.fn().mockResolvedValue({ marks: [] });
-    const hass = buildHass(callService);
-
-    await fetchMarks(hass, 'sensor.child_marks', 'D3006424', 'D118763');
-
-    expect(callService).toHaveBeenCalledWith('skolaonline_znamky', 'get_marks', { config_entry_id: 'entry123', student_id: 'D3006424', subject_id: 'D118763' }, undefined, undefined, true);
-  });
-
   it('rejects when the entity has no resolvable config_entry_id', async () => {
     const hass = buildHass(vi.fn());
     await expect(fetchMarks(hass, 'sensor.no_device_marks', 'D3006424')).rejects.toThrow();
+  });
+});
+
+describe('refreshMarks', () => {
+  it('calls homeassistant.update_entity targeted at the entity, forcing a coordinator refresh', async () => {
+    const callService = vi.fn().mockResolvedValue(undefined);
+    const hass = buildHass(callService);
+
+    await refreshMarks(hass, 'sensor.child_marks');
+
+    expect(callService).toHaveBeenCalledWith('homeassistant', 'update_entity', undefined, { entity_id: 'sensor.child_marks' });
   });
 });

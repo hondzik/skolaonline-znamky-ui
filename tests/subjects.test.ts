@@ -82,6 +82,25 @@ describe('orderSubjects', () => {
     expect(result[0].name).toBe('D999');
   });
 
+  it('passes through a subject with no marks yet (null average, empty marks) unchanged', () => {
+    // Subjects the backend knows about from the timetable but with no marks
+    // yet this semester have average=null, count=0, marks=[] — orderSubjects
+    // must not choke on that (no math on `average` here).
+    const attrs = buildAttrs({
+      subject_names: { D000001: 'Fyzika' },
+      subjects: [{ subject_id: 'D000001', average: null, count: 0, marks: [] }],
+    });
+    const result = orderSubjects(attrs, {});
+    expect(result[0]).toMatchObject({ subject_id: 'D000001', name: 'Fyzika', average: null, count: 0, marks: [] });
+  });
+
+  it('flags subjects listed in subject_hidden, but still returns them', () => {
+    const attrs = buildAttrs();
+    const result = orderSubjects(attrs, { subject_hidden: ['D118763'] });
+    expect(result.find((s) => s.subject_id === 'D118763')?.hidden).toBe(true);
+    expect(result.find((s) => s.subject_id === 'D118760')?.hidden).toBe(false);
+  });
+
   it('attaches the configured color and resolves the display name', () => {
     const attrs = buildAttrs();
     const result = orderSubjects(attrs, { subject_colors: { D118763: '#3f51b5' } });

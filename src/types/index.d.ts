@@ -68,7 +68,9 @@ declare global {
 
   interface SkolaOnlineSubject {
     subject_id: string;
-    average: number;
+    // null for a subject the backend knows about (e.g. from the timetable)
+    // but that has no marks yet this semester.
+    average: number | null;
     count: number;
     marks: SkolaOnlineMark[];
   }
@@ -128,8 +130,12 @@ declare global {
     title?: string;
     subject_order?: string[];
     subject_colors?: Record<string, string>;
+    subject_hidden?: string[];
     title_font_size?: number;
+    subject_font_size?: number;
     marks_font_size?: number;
+    border_width?: number;
     size_by_weight?: boolean;
+    show_empty_subjects?: boolean;
   };
 }

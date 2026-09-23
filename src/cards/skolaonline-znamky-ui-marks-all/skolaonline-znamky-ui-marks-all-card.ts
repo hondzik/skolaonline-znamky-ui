@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import setupCustomlocalize from '../../localize';
 import { gradeColor, parseGrade } from '../../utils/grades';
 import { averageWeight, markChipSizeEm } from '../../utils/mark-size';
-import { fetchMarks } from '../../utils/marks-service';
+import { fetchMarks, refreshMarks } from '../../utils/marks-service';
 import { shouldHighlightMark } from '../../utils/new-marks';
 import { orderSubjects } from '../../utils/subjects';
 import { SkolaOnlineMarksAllCardStyles } from './skolaonline-znamky-ui-marks-all-styles';
@@ -14,6 +14,10 @@ import type { CSSResultGroup, PropertyValues, TemplateResult } from 'lit';
 import './skolaonline-znamky-ui-marks-all-editor';
 
 const CARD_TAG = 'skolaonline-znamky-ui-marks-all-card';
+// get_marks returns the full mark list for the whole semester regardless of
+// the subject_id filter, so the card fetches it once and reuses it for every
+// subject's expanded row — refetched only once this cache goes stale.
+const MARKS_CACHE_TTL_MS = 30 * 60 * 1000;
 
 @customElement(CARD_TAG)
 export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard {
@@ -23,12 +27,10 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
   @state()
   private _config?: SkolaOnlineMarksCardConfig;
 
-  // undefined = history panel closed, null = whole-student history, otherwise a subject_id
+  // undefined = nothing expanded, otherwise the expanded subject's subject_id.
+  // Only one subject can be expanded at a time — opening one closes any other.
   @state()
-  private _historyTarget?: string | null;
-
-  @state()
-  private _historyMarks?: SkolaOnlineFullMark[];
+  private _expandedSubjectId?: string;
 
   @state()
   private _historyLoading = false;
@@ -36,8 +38,16 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
   @state()
   private _historyError?: string;
 
+  // All marks for the student's current semester, fetched once via get_marks
+  // and reused for every subject's expanded row (see MARKS_CACHE_TTL_MS).
+  @state()
+  private _marksCache?: { fetchedAt: number; semesterId: string; marks: SkolaOnlineFullMark[] };
+
   @state()
   private _newMarkIds: Set<string> = new Set();
+
+  @state()
+  private _refreshing = false;
 
   private _unsubscribeEvents?: () => Promise<void>;
 
@@ -49,7 +59,7 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
   }
 
   public getCardSize(): number {
-    return 2 + Math.max(1, this._subjects.length);
+    return 2 + Math.max(1, this._visibleSubjects.length);
   }
 
   public static getConfigElement(): HTMLElement {
@@ -101,6 +111,7 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
       return;
     }
     this._newMarkIds = new Set(this._newMarkIds).add(event.mark_id);
+    this._invalidateMarksCache();
   }
 
   private get _attrs(): SkolaOnlineMarksAttributes | undefined {
@@ -115,6 +126,15 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
     return attrs ? orderSubjects(attrs, this._config ?? {}) : [];
   }
 
+  // What the card actually renders: manually hidden subjects are always
+  // skipped, and — unless show_empty_subjects is explicitly enabled —
+  // subjects with no marks yet this semester (e.g. one the backend only
+  // knows about from the timetable) are skipped too.
+  private get _visibleSubjects(): OrderedSubject[] {
+    const showEmptySubjects = this._config?.show_empty_subjects ?? true;
+    return this._subjects.filter((subject) => !subject.hidden && (showEmptySubjects || subject.count > 0));
+  }
+
   // Weight is not on a fixed scale across schools (some use 0.1-1, others
   // 1-100), so "heavy" and "size by weight" both compare against this
   // reference (the average weight across the entity's marks) rather than an
@@ -125,6 +145,21 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
       return 0;
     }
     return averageWeight(attrs.subjects.flatMap((subject) => subject.marks.map((mark) => mark.weight)));
+  }
+
+  private get _allMarks(): SkolaOnlineFullMark[] {
+    return this._marksCache?.marks ?? [];
+  }
+
+  // Drops the get_marks cache — called whenever the underlying marks may
+  // have changed (a new_mark event, or a manual refresh). If a subject/
+  // history panel is currently expanded, re-fetches right away instead of
+  // leaving it showing a stale (or now-empty) list until the user toggles it.
+  private _invalidateMarksCache(): void {
+    this._marksCache = undefined;
+    if (this._expandedSubjectId !== undefined) {
+      void this._ensureMarksLoaded();
+    }
   }
 
   protected render(): TemplateResult {
@@ -138,7 +173,7 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
     }
 
     const average = Number(this.hass.states[this._config.entity].state);
-    const cardStyle = `--soz-title-font-size:${this._config.title_font_size ?? 20}px;--soz-marks-font-size:${this._config.marks_font_size ?? 14}px;`;
+    const cardStyle = `--soz-title-font-size:${this._config.title_font_size ?? 20}px;--soz-subject-font-size:${this._config.subject_font_size ?? 15}px;--soz-marks-font-size:${this._config.marks_font_size ?? 14}px;`;
 
     return html`
       <ha-card style=${cardStyle}>
@@ -147,39 +182,65 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
             <div class="student-name">${this._config.title || attrs.student_name}</div>
             <div class="context">${attrs.school_year} · ${attrs.semester_name}</div>
           </div>
-          <div class="average" style="background:${gradeColor(average)}">${Number.isFinite(average) ? average.toFixed(2) : '–'}</div>
+          <div class="header-right">
+            <ha-icon-button class="refresh-button" .label=${localize('card.refresh')} .disabled=${this._refreshing} @click=${() => this._refresh()}>
+              ${this._refreshing ? html`<ha-spinner size="small"></ha-spinner>` : html`<ha-icon icon="mdi:reload"></ha-icon>`}
+            </ha-icon-button>
+            <div class="average" style="background:${gradeColor(average)}">${Number.isFinite(average) ? average.toFixed(2) : '–'}</div>
+          </div>
         </div>
-        <div class="subjects">${this._subjects.map((subject) => this._renderSubjectRow(subject))}</div>
-        <div class="footer">
-          <button class="history-toggle" @click=${() => this._toggleHistory(null)}>${localize('card.history_button')}</button>
-        </div>
-        ${this._historyTarget !== undefined ? this._renderHistory(localize) : nothing}
+        <div class="subjects">${this._visibleSubjects.map((subject) => this._renderSubjectRow(subject, localize))}</div>
       </ha-card>
     `;
   }
 
-  private _renderSubjectRow(subject: OrderedSubject): TemplateResult {
+  private _renderSubjectRow(subject: OrderedSubject, localize: (key: string) => string): TemplateResult {
     const shown = [...subject.marks].sort((a, b) => (a.date < b.date ? 1 : -1));
     const extra = subject.count - shown.length;
     const referenceWeight = this._referenceWeight;
+    const borderWidth = this._config?.border_width ?? 8;
+    const toggle = () => this._toggleHistory(subject.subject_id);
 
     return html`
-      <div class="subject-row" style="--subject-color:${subject.color ?? 'var(--primary-color)'}" @click=${() => this._toggleHistory(subject.subject_id)}>
-        <div class="subject-row-top">
-          <div class="subject-name">${subject.name}</div>
-          <div class="subject-average" style="color:${gradeColor(subject.average)}">${subject.average.toFixed(2)}</div>
+      <div class="subject-row" style="background:${subject.color ?? 'var(--primary-color)'};padding-left:${borderWidth}px">
+        <div class="subject-row-inner">
+          <div class="subject-row-top" @click=${toggle}>
+            <div class="subject-name">${subject.name}</div>
+            <div class="subject-average" style="color:${subject.average === null ? 'var(--secondary-text-color)' : gradeColor(subject.average)}">
+              ${subject.average === null ? '–' : subject.average.toFixed(2)}
+            </div>
+          </div>
+          <div class="marks" @click=${toggle}>
+            ${
+              shown.length
+                ? html`${shown.map((mark) => this._renderMarkChip(mark, referenceWeight))} ${extra > 0 ? html`<div class="more-marks">+${extra}</div>` : nothing}`
+                : html`<div class="no-marks">${localize('card.no_marks')}</div>`
+            }
+          </div>
+          ${
+            this._expandedSubjectId === subject.subject_id
+              ? this._renderMarksList(
+                  this._allMarks.filter((mark) => mark.subject_id === subject.subject_id),
+                  localize,
+                )
+              : nothing
+          }
         </div>
-        <div class="marks">${shown.map((mark) => this._renderMarkChip(mark, referenceWeight))} ${extra > 0 ? html`<div class="more-marks">+${extra}</div>` : nothing}</div>
       </div>
     `;
   }
 
   private _renderMarkChip(mark: SkolaOnlineMark, referenceWeight: number): TemplateResult {
     const grade = parseGrade(mark.value);
-    const background = grade === null ? 'var(--disabled-text-color, #9e9e9e)' : gradeColor(grade);
+    const isVerbal = grade === null;
+    const background = isVerbal ? 'var(--disabled-text-color, #9e9e9e)' : gradeColor(grade);
     const isNew = shouldHighlightMark(mark.id, mark.date, this._newMarkIds);
-    const isHeavy = referenceWeight > 0 && mark.weight > referenceWeight;
-    const sizeStyle = this._config?.size_by_weight ? `width:${markChipSizeEm(mark.weight, referenceWeight)}em;height:${markChipSizeEm(mark.weight, referenceWeight)}em;` : '';
+    // A verbal evaluation's own weight isn't meaningful for sizing (it isn't
+    // part of the weighted average), so it's sized as if it were exactly at
+    // the reference weight instead of using its own weight value.
+    const sizeWeight = isVerbal ? referenceWeight : mark.weight;
+    const isHeavy = referenceWeight > 0 && sizeWeight > referenceWeight;
+    const sizeStyle = this._config?.size_by_weight ? `width:${markChipSizeEm(sizeWeight, referenceWeight)}em;height:${markChipSizeEm(sizeWeight, referenceWeight)}em;` : '';
     return html`
       <div class="mark-chip ${isHeavy ? 'heavy' : ''} ${isNew ? 'new' : ''}" style="background:${background};${sizeStyle}" title="${mark.date.slice(0, 10)} · ${mark.weight}">
         ${mark.value}
@@ -187,23 +248,46 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
     `;
   }
 
-  private async _toggleHistory(target: string | null): Promise<void> {
-    if (this._historyTarget === target) {
-      this._historyTarget = undefined;
+  private async _refresh(): Promise<void> {
+    if (!this.hass || !this._config || this._refreshing) {
       return;
     }
-    this._historyTarget = target;
-    this._historyMarks = undefined;
-    this._historyError = undefined;
+    this._refreshing = true;
+    this._invalidateMarksCache();
+    try {
+      await refreshMarks(this.hass, this._config.entity);
+    } catch (e) {
+      console.error(`${CARD_TAG}: failed to refresh marks`, e);
+    } finally {
+      this._refreshing = false;
+    }
+  }
 
+  private async _toggleHistory(target: string): Promise<void> {
+    if (this._expandedSubjectId === target) {
+      this._expandedSubjectId = undefined;
+      return;
+    }
+    this._expandedSubjectId = target;
+    await this._ensureMarksLoaded();
+  }
+
+  private async _ensureMarksLoaded(): Promise<void> {
     const attrs = this._attrs;
     if (!this.hass || !this._config || !attrs) {
       return;
     }
+    const cache = this._marksCache;
+    const isFresh = !!cache && cache.semesterId === attrs.semester_id && Date.now() - cache.fetchedAt < MARKS_CACHE_TTL_MS;
+    if (isFresh) {
+      return;
+    }
 
     this._historyLoading = true;
+    this._historyError = undefined;
     try {
-      this._historyMarks = await fetchMarks(this.hass, this._config.entity, attrs.student_id, target ?? undefined);
+      const marks = await fetchMarks(this.hass, this._config.entity, attrs.student_id);
+      this._marksCache = { fetchedAt: Date.now(), semesterId: attrs.semester_id, marks };
     } catch (e) {
       this._historyError = e instanceof Error ? e.message : String(e);
     } finally {
@@ -211,7 +295,7 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
     }
   }
 
-  private _renderHistory(localize: (key: string) => string): TemplateResult {
+  private _renderMarksList(marks: SkolaOnlineFullMark[], localize: (key: string) => string): TemplateResult {
     if (this._historyLoading) {
       return html`<div class="history">
         <div class="history-loading"><ha-spinner size="small"></ha-spinner></div>
@@ -220,11 +304,11 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
     if (this._historyError) {
       return html`<div class="history"><ha-alert alert-type="error">${this._historyError}</ha-alert></div>`;
     }
-    if (!this._historyMarks?.length) {
+    if (!marks.length) {
       return html`<div class="history"><div class="empty">${localize('card.history_empty')}</div></div>`;
     }
 
-    const sorted = [...this._historyMarks].sort((a, b) => (a.date < b.date ? 1 : -1));
+    const sorted = [...marks].sort((a, b) => (a.date < b.date ? 1 : -1));
     return html` <div class="history">${sorted.map((mark) => this._renderHistoryRow(mark))}</div> `;
   }
 

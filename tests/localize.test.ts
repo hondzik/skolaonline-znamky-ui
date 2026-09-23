@@ -9,17 +9,17 @@ function hassWithLanguage(language: string): HomeAssistant {
 describe('setupCustomlocalize', () => {
   it('translates a known key in the requested language', () => {
     const localize = setupCustomlocalize(hassWithLanguage('cs'));
-    expect(localize('card.history_button')).toBe('Celá historie');
+    expect(localize('card.refresh')).toBe('Aktualizovat známky');
   });
 
   it('falls back to English when the requested language is not available', () => {
     const localize = setupCustomlocalize(hassWithLanguage('xx'));
-    expect(localize('card.history_button')).toBe('Full history');
+    expect(localize('card.refresh')).toBe('Refresh marks');
   });
 
   it('falls back to English when hass is not provided', () => {
     const localize = setupCustomlocalize(undefined);
-    expect(localize('card.history_button')).toBe('Full history');
+    expect(localize('card.refresh')).toBe('Refresh marks');
   });
 
   it('returns the key itself when missing from every language', () => {

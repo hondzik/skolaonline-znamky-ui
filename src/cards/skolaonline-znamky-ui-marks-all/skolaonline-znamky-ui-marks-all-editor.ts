@@ -49,7 +49,7 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
 
         <ha-selector
           .hass=${this.hass}
-          .selector=${{ number: { min: 12, max: 32, step: 1, mode: 'box', unit_of_measurement: 'px' } }}
+          .selector=${{ number: { min: 12, max: 32, step: 1, mode: 'slider', unit_of_measurement: 'px' } }}
           .value=${this._config.title_font_size ?? 20}
           .label=${localize('editor.title_font_size')}
           @value-changed=${this._titleFontSizeChanged}
@@ -57,16 +57,36 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
 
         <ha-selector
           .hass=${this.hass}
-          .selector=${{ number: { min: 8, max: 24, step: 1, mode: 'box', unit_of_measurement: 'px' } }}
+          .selector=${{ number: { min: 10, max: 24, step: 1, mode: 'slider', unit_of_measurement: 'px' } }}
+          .value=${this._config.subject_font_size ?? 15}
+          .label=${localize('editor.subject_font_size')}
+          @value-changed=${this._subjectFontSizeChanged}
+        ></ha-selector>
+
+        <ha-selector
+          .hass=${this.hass}
+          .selector=${{ number: { min: 8, max: 24, step: 1, mode: 'slider', unit_of_measurement: 'px' } }}
           .value=${this._config.marks_font_size ?? 14}
           .label=${localize('editor.marks_font_size')}
           @value-changed=${this._marksFontSizeChanged}
+        ></ha-selector>
+
+        <ha-selector
+          .hass=${this.hass}
+          .selector=${{ number: { min: 2, max: 20, step: 1, mode: 'slider', unit_of_measurement: 'px' } }}
+          .value=${this._config.border_width ?? 8}
+          .label=${localize('editor.border_width')}
+          @value-changed=${this._borderWidthChanged}
         ></ha-selector>
 
         <ha-formfield class="switch-row" .label=${localize('editor.size_by_weight')}>
           <ha-switch .checked=${this._config.size_by_weight ?? false} @change=${this._sizeByWeightChanged}></ha-switch>
         </ha-formfield>
         <div class="section-description">${localize('editor.size_by_weight_description')}</div>
+
+        <ha-formfield class="switch-row" .label=${localize('editor.show_empty_subjects')}>
+          <ha-switch .checked=${this._config.show_empty_subjects ?? true} @change=${this._showEmptySubjectsChanged}></ha-switch>
+        </ha-formfield>
 
         ${this._renderSubjects(localize)}
       </div>
@@ -80,7 +100,7 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
     }
 
     const subjects: OrderedSubject[] = orderSubjects(attrs, this._config);
-    const items: SoSortableListItem[] = subjects.map((subject) => ({ id: subject.subject_id, label: subject.name }));
+    const items: SoSortableListItem[] = subjects.map((subject) => ({ id: subject.subject_id, label: subject.name, dimmed: subject.hidden }));
 
     return html`
       <div class="section-heading">${localize('editor.subjects_heading')}</div>
@@ -88,7 +108,7 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
       <so-sortable-list
         .items=${items}
         .renderLeading=${(item: SoSortableListItem) => this._renderColorSwatch(item, subjects)}
-        .renderTrailing=${(item: SoSortableListItem) => this._renderResetButton(item, localize)}
+        .renderTrailing=${(item: SoSortableListItem) => this._renderRowActions(item, subjects, localize)}
         @reorder=${this._onReorder}
       ></so-sortable-list>
     `;
@@ -99,10 +119,14 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
     return html`<input type="color" class="color-swatch" .value=${color} @click=${(e: Event) => e.stopPropagation()} @input=${(e: Event) => this._colorChanged(item.id, e)} />`;
   }
 
-  private _renderResetButton(item: SoSortableListItem, localize: (key: string) => string): TemplateResult {
+  private _renderRowActions(item: SoSortableListItem, subjects: OrderedSubject[], localize: (key: string) => string): TemplateResult {
+    const hidden = subjects.find((subject) => subject.subject_id === item.id)?.hidden ?? false;
     return html`
       <ha-icon-button .label=${localize('editor.reset_color')} @click=${(e: Event) => this._resetColor(item.id, e)}>
         <ha-icon icon="mdi:format-color-reset"></ha-icon>
+      </ha-icon-button>
+      <ha-icon-button .label=${hidden ? localize('editor.show_subject') : localize('editor.hide_subject')} @click=${(e: Event) => this._toggleHidden(item.id, e)}>
+        <ha-icon icon=${hidden ? 'mdi:eye-off' : 'mdi:eye'}></ha-icon>
       </ha-icon-button>
     `;
   }
@@ -120,13 +144,37 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
     this._updateConfig({ ...this._config, title_font_size: e.detail.value });
   }
 
+  private _subjectFontSizeChanged(e: CustomEvent<{ value: number }>): void {
+    this._updateConfig({ ...this._config, subject_font_size: e.detail.value });
+  }
+
   private _marksFontSizeChanged(e: CustomEvent<{ value: number }>): void {
     this._updateConfig({ ...this._config, marks_font_size: e.detail.value });
+  }
+
+  private _borderWidthChanged(e: CustomEvent<{ value: number }>): void {
+    this._updateConfig({ ...this._config, border_width: e.detail.value });
   }
 
   private _sizeByWeightChanged(e: Event): void {
     const checked = (e.target as HTMLInputElement).checked;
     this._updateConfig({ ...this._config, size_by_weight: checked });
+  }
+
+  private _showEmptySubjectsChanged(e: Event): void {
+    const checked = (e.target as HTMLInputElement).checked;
+    this._updateConfig({ ...this._config, show_empty_subjects: checked });
+  }
+
+  private _toggleHidden(subjectId: string, e: Event): void {
+    e.stopPropagation();
+    const hidden = new Set(this._config.subject_hidden ?? []);
+    if (hidden.has(subjectId)) {
+      hidden.delete(subjectId);
+    } else {
+      hidden.add(subjectId);
+    }
+    this._updateConfig({ ...this._config, subject_hidden: [...hidden] });
   }
 
   private _colorChanged(subjectId: string, e: Event): void {

@@ -28,6 +28,19 @@ export const SkolaOnlineMarksAllCardStyles = css`
     color: var(--secondary-text-color);
   }
 
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .refresh-button {
+    --mdc-icon-button-size: 32px;
+    --mdc-icon-size: 20px;
+    color: var(--secondary-text-color);
+  }
+
   .average {
     flex-shrink: 0;
     font-size: 1.6em;
@@ -45,17 +58,33 @@ export const SkolaOnlineMarksAllCardStyles = css`
     gap: 6px;
   }
 
+  /*
+   * The colored "border" is really the outer element's own background,
+   * revealed only on the left by the inner element's padding-left (a solid
+   * "border" on all sides would need the color as an actual border, but
+   * this way the two share the exact same border-radius, so the visible
+   * strip's corners line up with the row's own rounded corners).
+   */
   .subject-row {
+    border-radius: 10px;
+  }
+
+  .subject-row-inner {
     display: flex;
     flex-direction: column;
     gap: 6px;
     padding: 8px 10px;
     border-radius: 10px;
-    border: 2px solid var(--subject-color, var(--primary-color));
+    background: var(--card-background-color, #fff);
+  }
+
+  .subject-row-top,
+  .marks {
     cursor: pointer;
   }
 
-  .subject-row:hover {
+  .subject-row-top:hover,
+  .marks:hover {
     background: var(--secondary-background-color, rgba(0, 0, 0, 0.04));
   }
 
@@ -68,7 +97,7 @@ export const SkolaOnlineMarksAllCardStyles = css`
   .subject-name {
     flex: 1;
     color: var(--primary-text-color);
-    font-size: 0.95em;
+    font-size: var(--soz-subject-font-size, 0.95em);
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -118,17 +147,17 @@ export const SkolaOnlineMarksAllCardStyles = css`
     box-shadow: 0 0 0 2px var(--card-background-color, #fff);
   }
 
+  .no-marks {
+    color: var(--secondary-text-color);
+    font-size: var(--soz-marks-font-size, 0.8em);
+    font-style: italic;
+  }
+
   .more-marks {
     color: var(--secondary-text-color);
     font-size: var(--soz-marks-font-size, 0.8em);
     padding-left: 2px;
     flex-shrink: 0;
-  }
-
-  .footer {
-    margin-top: 12px;
-    display: flex;
-    justify-content: flex-end;
   }
 
   .history {

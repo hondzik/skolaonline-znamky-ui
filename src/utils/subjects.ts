@@ -1,10 +1,15 @@
 export interface OrderedSubject {
   subject_id: string;
   name: string;
-  average: number;
+  // null for a subject with no marks yet this semester.
+  average: number | null;
   count: number;
   marks: SkolaOnlineMark[];
   color?: string;
+  // true if the subject_id is in `subject_hidden` — the card must skip it
+  // when rendering, but the editor still lists it (dimmed) so it can be
+  // shown again.
+  hidden: boolean;
 }
 
 /**
@@ -14,10 +19,16 @@ export interface OrderedSubject {
  * Unicode code point, not Czech alphabetical order, and a new/removed subject
  * must not break rendering — subjects missing from `subject_order` just fall
  * back to the sorted tail, and stale ids in `subject_order` are ignored.
+ *
+ * Returns every subject the entity knows about, manually hidden or not —
+ * whether a hidden or empty (no marks yet) subject should actually be
+ * skipped when rendering the card is up to the caller, since the editor
+ * needs the full list to let the user show a hidden subject again.
  */
-export function orderSubjects(attrs: SkolaOnlineMarksAttributes, config: Pick<SkolaOnlineMarksCardConfig, 'subject_order' | 'subject_colors'>): OrderedSubject[] {
+export function orderSubjects(attrs: SkolaOnlineMarksAttributes, config: Pick<SkolaOnlineMarksCardConfig, 'subject_order' | 'subject_colors' | 'subject_hidden'>): OrderedSubject[] {
   const byId = new Map(attrs.subjects.map((subject) => [subject.subject_id, subject]));
   const colors = config.subject_colors ?? {};
+  const hiddenIds = new Set(config.subject_hidden ?? []);
   const seen = new Set<string>();
 
   const ordered: SkolaOnlineSubject[] = [];
@@ -40,5 +51,6 @@ export function orderSubjects(attrs: SkolaOnlineMarksAttributes, config: Pick<Sk
     count: subject.count,
     marks: subject.marks,
     color: colors[subject.subject_id],
+    hidden: hiddenIds.has(subject.subject_id),
   }));
 }
