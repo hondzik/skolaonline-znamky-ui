@@ -18,7 +18,7 @@
     "skolaonline-znamky-ui"
   ],
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "module": "./dist/skolaonline-znamky-ui.js",
   "scripts": {
     "watch": "rollup -c conf/rollup.config.js -w",
