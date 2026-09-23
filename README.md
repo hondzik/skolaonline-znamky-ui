@@ -57,6 +57,8 @@ Install through [HACS](https://hacs.xyz/) as a custom repository (category: Plug
 listed in the default store yet, or copy `dist/skolaonline-znamky-ui.js` into your `www/`
 folder and add it as a Lovelace resource manually.
 
+[![My Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?repository=skolaonline-znamky-ui&owner=hondzik&category=Plugin)
+
 ### 2. Add the card
 
 Make sure the [`skolaonline_znamky`](https://github.com/hondzik/skolaonline-znamky) integration

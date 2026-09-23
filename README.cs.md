@@ -56,6 +56,8 @@ Nainstalujte přes [HACS](https://hacs.xyz/) jako vlastní repozitář (kategori
 ještě není v výchozím katalogu, nebo zkopírujte `dist/skolaonline-znamky-ui.js` do složky
 `www/` a přidejte ho jako Lovelace resource ručně.
 
+[![My Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?repository=skolaonline-znamky-ui&owner=hondzik&category=Plugin)
+
 ### 2. Přidání karty
 
 Ujistěte se, že je nastavená integrace
