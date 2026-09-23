@@ -145,5 +145,6 @@ declare global {
     border_width?: number;
     size_by_weight?: boolean;
     show_empty_subjects?: boolean;
+    new_mark_days?: number;
   };
 }

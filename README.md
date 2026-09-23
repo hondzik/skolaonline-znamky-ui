@@ -46,8 +46,11 @@ directly:
   and any individual subject can be hidden from the visual editor regardless of whether it has
   marks.
 - **New mark highlight** — a mark is flagged as new either because it just arrived via the
-  integration's `skolaonline_znamky_new_mark` event, or because its date is within the last few
-  days.
+  integration's `skolaonline_znamky_new_mark` event, or because its date is within the last
+  `new_mark_days` *school* days (default 1, i.e. today only) — weekends aren't counted, so with
+  `new_mark_days: 2` a mark from last Friday still counts as recent on the following Monday, not
+  just Tuesday. Setting `new_mark_days` to 0 turns the highlight off entirely, including for a
+  mark that just arrived via the event.
 - **Full history** — clicking a subject row expands the complete, unabridged list of that
   subject's marks (date, theme and weight, plus the verbal evaluation field, none of which fit
   in the entity's attributes) right under the row; only one subject can be expanded at a time,
@@ -106,6 +109,7 @@ All options are settable either through YAML or the visual editor:
 | `size_by_weight` | boolean | `false` | Scale a mark chip's size by where its weight falls between the lightest and heaviest weight shown on the card (verbal evaluations are sized as if at the midpoint, since their own weight isn't meaningful). Works regardless of which weight scale the school uses (e.g. 0.1-1 or 1-100). |
 | `border_width` | number | `8` | Width (px) of the colored bar on the left of each subject row. |
 | `show_empty_subjects` | boolean | `true` | Whether to show subjects that have no marks yet this semester. |
+| `new_mark_days` | number | `1` | How many school days a mark stays highlighted as new (1 = today only; weekends don't count). `0` disables the highlight entirely. |
 | `subject_order` | list | attribute order | Subject ids in the order they should be displayed. |
 | `subject_colors` | map | none | Subject id → hex color, used for that subject's left bar and name. |
 | `subject_hidden` | list | none | Subject ids to always hide, regardless of `show_empty_subjects`. |
@@ -120,6 +124,7 @@ marks_font_size: 16
 border_width: 10
 size_by_weight: true
 show_empty_subjects: false
+new_mark_days: 5
 subject_order:
   - D118760
   - D118763
@@ -134,8 +139,9 @@ subject_hidden:
 ![The visual editor's config tab, with a live preview of the card on the right](docs/images/configuration-editor.png)
 
 Instead of editing YAML, open the card's visual editor (pencil icon) to pick the child's entity,
-set a custom title, adjust the three font sizes and the left bar's width with a slider each, and
-toggle whether subjects with no marks yet are shown at all. The **subject order and colors**
+set a custom title, adjust the three font sizes, the left bar's width and the new-mark highlight
+window with a slider each, and toggle whether subjects with no marks yet are shown at all. The
+**subject order and colors**
 section lists every subject currently on the entity, including hidden and mark-less ones (shown
 dimmed) — drag a row by its handle to reorder subjects on the card, click a subject's color dot
 to open a color picker and set its accent color (a button next to it resets back to the default

@@ -248,7 +248,7 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
     const grade = parseGrade(mark.value);
     const isVerbal = grade === null;
     const background = isVerbal ? 'var(--disabled-text-color, #9e9e9e)' : gradeColor(grade);
-    const isNew = shouldHighlightMark(mark.id, mark.date, this._newMarkIds);
+    const isNew = shouldHighlightMark(mark.id, mark.date, this._newMarkIds, this._config?.new_mark_days ?? 1);
     // A verbal evaluation's own weight isn't meaningful (it isn't part of
     // the weighted average), so for the "heavier than usual" indicator it's
     // treated as exactly at the reference weight (never heavy), and for

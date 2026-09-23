@@ -88,6 +88,15 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
           <ha-switch .checked=${this._config.show_empty_subjects ?? true} @change=${this._showEmptySubjectsChanged}></ha-switch>
         </ha-formfield>
 
+        <ha-selector
+          .hass=${this.hass}
+          .selector=${{ number: { min: 0, max: 30, step: 1, mode: 'slider', unit_of_measurement: localize('editor.new_mark_days_unit') } }}
+          .value=${this._config.new_mark_days ?? 1}
+          .label=${localize('editor.new_mark_days')}
+          @value-changed=${this._newMarkDaysChanged}
+        ></ha-selector>
+        <div class="section-description">${localize('editor.new_mark_days_description')}</div>
+
         ${this._renderSubjects(localize)}
       </div>
     `;
@@ -164,6 +173,10 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
   private _showEmptySubjectsChanged(e: Event): void {
     const checked = (e.target as HTMLInputElement).checked;
     this._updateConfig({ ...this._config, show_empty_subjects: checked });
+  }
+
+  private _newMarkDaysChanged(e: CustomEvent<{ value: number }>): void {
+    this._updateConfig({ ...this._config, new_mark_days: e.detail.value });
   }
 
   private _toggleHidden(subjectId: string, e: Event): void {

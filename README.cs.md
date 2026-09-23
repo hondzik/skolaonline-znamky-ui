@@ -46,7 +46,10 @@ Karta vychází výhradně z jedné entity `sensor.<dítě>_marks`, kterou už p
   ohledu na to, jestli známky má.
 - **Zvýraznění nové známky** — známka se označí jako nová buď proto, že právě dorazila přes
   event integrace `skolaonline_znamky_new_mark`, nebo proto, že je datovaná v posledních
-  několika dnech.
+  `new_mark_days` *školních* dnech (výchozí 1, tedy jen dnešní) — víkend se nepočítá, takže s
+  `new_mark_days: 2` je páteční známka v pondělí stále "čerstvá", nemusí čekat až na úterý.
+  Nastavením `new_mark_days` na 0 se zvýraznění úplně vypne, i pro známku, která právě dorazila
+  přes event.
 - **Celá historie** — kliknutím na řádek předmětu se pod ním rozbalí kompletní, nezkrácený
   seznam známek toho předmětu (datum, téma a váha, plus pole slovního hodnocení — nic z toho
   se do atributů entity nevejde); rozbalený může být vždy jen jeden předmět, takže otevření
@@ -105,6 +108,7 @@ Všechny volby lze nastavit přes YAML i přes grafický editor:
 | `size_by_weight` | boolean | `false` | Zvětší čtvereček známky podle toho, kde se její váha nachází mezi nejlehčí a nejtěžší váhou na kartě (slovní hodnocení se velikostí chová jako střed tohoto rozsahu, protože jeho vlastní váha nemá smysl). Funguje bez ohledu na to, jakou stupnici vah škola používá (např. 0,1–1 nebo 1–100). |
 | `border_width` | number | `8` | Šířka (px) barevného pruhu vlevo u každého předmětu. |
 | `show_empty_subjects` | boolean | `true` | Zda zobrazovat předměty, které v tomto pololetí ještě nemají žádnou známku. |
+| `new_mark_days` | number | `1` | Kolik školních dní zůstane známka zvýrazněná jako nová (1 = jen dnešní; víkend se nepočítá). `0` zvýraznění úplně vypne. |
 | `subject_order` | list | pořadí z atributu | ID předmětů v pořadí, v jakém se mají zobrazovat. |
 | `subject_colors` | map | žádná | ID předmětu → hex barva, použije se pro levý pruh a název předmětu. |
 | `subject_hidden` | list | žádná | ID předmětů, které se mají vždy skrýt, bez ohledu na `show_empty_subjects`. |
@@ -119,6 +123,7 @@ marks_font_size: 16
 border_width: 10
 size_by_weight: true
 show_empty_subjects: false
+new_mark_days: 5
 subject_order:
   - D118760
   - D118763
@@ -133,8 +138,9 @@ subject_hidden:
 ![Karta Config v grafickém editoru s živým náhledem karty vpravo](docs/images/configuration-editor.png)
 
 Místo úpravy YAML otevřete grafický editor karty (ikona tužky), vyberte entitu dítěte, nastavte
-vlastní název, posuvníkem doladíte všechny tři velikosti písma i šířku levého pruhu a přepínačem
-zvolíte, zda se mají zobrazovat i předměty bez známek. Sekce **pořadí a barvy předmětů** vypíše
+vlastní název, posuvníkem doladíte všechny tři velikosti písma, šířku levého pruhu i okno pro
+zvýraznění nové známky, a přepínačem zvolíte, zda se mají zobrazovat i předměty bez známek. Sekce
+**pořadí a barvy předmětů** vypíše
 všechny předměty, které entita momentálně nese, včetně skrytých a těch bez známek (zobrazí se
 ztmavené) — přetažením řádku za jeho úchyt změníte pořadí předmětů na kartě, kliknutím na
 barevný kroužek u předmětu otevřete výběr barvy pro jeho zvýraznění (tlačítko vedle vrátí
