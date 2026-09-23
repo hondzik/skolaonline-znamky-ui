@@ -1,0 +1,16 @@
+{
+  "card": {
+    "no_entity": "Vyberte entitu integrace Škola OnLine – Známky.",
+    "history_button": "Celá historie",
+    "history_empty": "Žádné známky k zobrazení.",
+    "history_error": "Nepodařilo se načíst historii známek."
+  },
+  "editor": {
+    "entity": "Entita (dítě)",
+    "title": "Vlastní název (nepovinné)",
+    "subjects_heading": "Pořadí a barvy předmětů",
+    "subjects_description": "Přetažením změníte pořadí předmětů na kartě, kliknutím na barevný kroužek nastavíte barvu předmětu.",
+    "reset_color": "Zrušit vlastní barvu",
+    "no_entity": "Nejprve vyberte entitu."
+  }
+}
