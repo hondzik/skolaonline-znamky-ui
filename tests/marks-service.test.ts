@@ -42,7 +42,10 @@ describe('resolveConfigEntryId', () => {
 
 describe('fetchMarks', () => {
   it('calls skolaonline_znamky.get_marks with returnResponse=true', async () => {
-    const callService = vi.fn().mockResolvedValue({ marks: [{ id: 'M1', subject_id: 'S1', subject_name: 'Fyzika', value: '1', weight: 0.2, date: '2026-09-22T00:00:00', theme: 'Kmity', verbal_evaluation: '', is_points: false }] });
+    const callService = vi.fn().mockResolvedValue({
+      context: { id: 'ctx1' },
+      response: { marks: [{ id: 'M1', subject_id: 'S1', subject_name: 'Fyzika', value: '1', weight: 0.2, date: '2026-09-22T00:00:00', theme: 'Kmity', verbal_evaluation: '', is_points: false }] },
+    });
     const hass = buildHass(callService);
 
     const marks = await fetchMarks(hass, 'sensor.child_marks', 'D3006424');

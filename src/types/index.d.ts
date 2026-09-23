@@ -123,6 +123,14 @@ declare global {
     marks: SkolaOnlineFullMark[];
   }
 
+  // Shape of the resolved promise when callService is invoked with
+  // returnResponse=true: the actual service response is nested under
+  // `response`, not returned directly (the top-level object also carries
+  // `context`, which the card has no use for).
+  interface HomeAssistantServiceCallResponseEnvelope<T> {
+    response: T;
+  }
+
   // -- card config -----------------------------------------------------------
 
   type SkolaOnlineMarksCardConfig = LovelaceCardConfig & {

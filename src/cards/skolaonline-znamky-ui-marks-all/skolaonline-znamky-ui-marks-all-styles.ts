@@ -55,18 +55,20 @@ export const SkolaOnlineMarksAllCardStyles = css`
   .subjects {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 12px;
   }
 
   /*
    * The colored "border" is really the outer element's own background,
-   * revealed only on the left by the inner element's padding-left (a solid
-   * "border" on all sides would need the color as an actual border, but
-   * this way the two share the exact same border-radius, so the visible
-   * strip's corners line up with the row's own rounded corners).
+   * revealed only on the left by the inner element's padding-left. The
+   * outer clips to its own border-radius (overflow: hidden) so the inner
+   * element's square corners are cropped to match instead of being drawn
+   * separately, which is what left color slivers showing through the
+   * top-right/bottom-right corners.
    */
   .subject-row {
     border-radius: 10px;
+    overflow: hidden;
   }
 
   .subject-row-inner {
@@ -74,7 +76,6 @@ export const SkolaOnlineMarksAllCardStyles = css`
     flex-direction: column;
     gap: 6px;
     padding: 8px 10px;
-    border-radius: 10px;
     background: var(--card-background-color, #fff);
   }
 

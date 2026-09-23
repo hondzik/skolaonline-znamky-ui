@@ -37,8 +37,10 @@ export async function fetchMarks(hass: HomeAssistant, entityId: string, studentI
     student_id: studentId,
   };
 
-  const response = await (hass as unknown as HomeAssistantServiceCallWithResponse).callService('skolaonline_znamky', 'get_marks', serviceData, undefined, undefined, true);
-  return (response as SkolaOnlineGetMarksResponse).marks;
+  const result = await (hass as unknown as HomeAssistantServiceCallWithResponse).callService('skolaonline_znamky', 'get_marks', serviceData, undefined, undefined, true);
+  // callService with returnResponse=true resolves to { context, response },
+  // not the service response itself — the marks are nested under `response`.
+  return (result as HomeAssistantServiceCallResponseEnvelope<SkolaOnlineGetMarksResponse>).response.marks;
 }
 
 /**

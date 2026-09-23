@@ -123,7 +123,7 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
     const hidden = subjects.find((subject) => subject.subject_id === item.id)?.hidden ?? false;
     return html`
       <ha-icon-button .label=${localize('editor.reset_color')} @click=${(e: Event) => this._resetColor(item.id, e)}>
-        <ha-icon icon="mdi:format-color-reset"></ha-icon>
+        <ha-icon icon="mdi:restore"></ha-icon>
       </ha-icon-button>
       <ha-icon-button .label=${hidden ? localize('editor.show_subject') : localize('editor.hide_subject')} @click=${(e: Event) => this._toggleHidden(item.id, e)}>
         <ha-icon icon=${hidden ? 'mdi:eye-off' : 'mdi:eye'}></ha-icon>
