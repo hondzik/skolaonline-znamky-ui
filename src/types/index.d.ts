@@ -16,17 +16,27 @@ declare global {
   }
 
   // Minimal shape of the entity/device registry display data the frontend
-  // attaches to hass (missing from custom-card-helpers' types).
+  // attaches to hass (missing from custom-card-helpers' types). This is the
+  // lightweight display registry, not the full entity_registry/device_registry
+  // records — it does NOT carry config_entry_id on the entity itself, only
+  // device_id; config_entry_id has to be resolved via the device instead.
   interface EntityRegistryDisplayEntry {
     entity_id: string;
     platform?: string;
-    config_entry_id?: string | null;
     device_id?: string;
     name?: string;
   }
 
+  interface DeviceRegistryDisplayEntry {
+    id: string;
+    name?: string;
+    name_by_user?: string;
+    config_entries?: string[];
+  }
+
   type HassWithRegistry = HomeAssistant & {
     entities?: Record<string, EntityRegistryDisplayEntry>;
+    devices?: Record<string, DeviceRegistryDisplayEntry>;
   };
 
   // custom-card-helpers' HomeAssistant.callService only models the 4-arg,
@@ -118,5 +128,8 @@ declare global {
     title?: string;
     subject_order?: string[];
     subject_colors?: Record<string, string>;
+    title_font_size?: number;
+    marks_font_size?: number;
+    size_by_weight?: boolean;
   };
 }

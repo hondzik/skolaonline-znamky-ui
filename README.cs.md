@@ -80,13 +80,19 @@ Všechny volby lze nastavit přes YAML i přes grafický editor:
 | ---------------- | ------ | ------------------ | -------------------------------------------------------------------- |
 | `entity` | string | — | Entita `sensor.<dítě>_marks`. Povinné. |
 | `title` | string | jméno dítěte | Přepíše jméno zobrazené v hlavičce. |
+| `title_font_size` | number | `20` | Velikost písma (px) nadpisu v hlavičce. |
+| `marks_font_size` | number | `14` | Velikost písma (px) čtverečků se známkami a odznaku "+N dalších". |
+| `size_by_weight` | boolean | `false` | Zvětší čtvereček známky podle její váhy vůči průměrné váze zobrazených známek. Funguje bez ohledu na to, jakou stupnici vah škola používá (např. 0,1–1 nebo 1–100). |
 | `subject_order` | list | pořadí z atributu | ID předmětů v pořadí, v jakém se mají zobrazovat. |
-| `subject_colors` | map | žádná | ID předmětu → hex barva, použije se pro pruh a název předmětu. |
+| `subject_colors` | map | žádná | ID předmětu → hex barva, použije se pro rámeček a název předmětu. |
 
 ```yaml
 type: custom:skolaonline-znamky-ui-marks-all-card
 entity: sensor.<dítě>_marks
 title: 'Tomáš'
+title_font_size: 22
+marks_font_size: 16
+size_by_weight: true
 subject_order:
   - D118760
   - D118763

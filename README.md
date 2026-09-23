@@ -81,13 +81,19 @@ All options are settable either through YAML or the visual editor:
 | ---------------- | ------ | ------------------ | ------------------------------------------------------------------------ |
 | `entity` | string | — | The `sensor.<child>_marks` entity. Required. |
 | `title` | string | child's name | Overrides the name shown in the header. |
+| `title_font_size` | number | `20` | Font size (px) of the header title. |
+| `marks_font_size` | number | `14` | Font size (px) of the mark chips and the "+N more" badge. |
+| `size_by_weight` | boolean | `false` | Scale a mark chip's size by its weight, relative to the average weight of the marks shown. Works regardless of which weight scale the school uses (e.g. 0.1-1 or 1-100). |
 | `subject_order` | list | attribute order | Subject ids in the order they should be displayed. |
-| `subject_colors` | map | none | Subject id → hex color, used for that subject's accent bar and name. |
+| `subject_colors` | map | none | Subject id → hex color, used for that subject's border and name. |
 
 ```yaml
 type: custom:skolaonline-znamky-ui-marks-all-card
 entity: sensor.<child>_marks
 title: 'Tomáš'
+title_font_size: 22
+marks_font_size: 16
+size_by_weight: true
 subject_order:
   - D118760
   - D118763

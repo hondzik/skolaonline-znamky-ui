@@ -3,13 +3,18 @@ import type { HomeAssistant } from 'custom-card-helpers';
 /**
  * The `config_entry_id` the get_marks service needs is not something the
  * card's user configures directly — the config entry is "the account", the
- * entity is "the child" under it, so it's looked up from the entity
- * registry instead (hass.entities[entityId].config_entry_id).
+ * entity is "the child" under it. It isn't on the lightweight entity
+ * registry display data the frontend gives cards (hass.entities) though —
+ * only the full entity_registry record has it. It's resolved via the
+ * entity's device instead: hass.entities[entityId].device_id →
+ * hass.devices[deviceId].config_entries[0], which the lightweight device
+ * registry display data does carry.
  */
 export function resolveConfigEntryId(hass: HassWithRegistry, entityId: string): string {
-  const configEntryId = hass.entities?.[entityId]?.config_entry_id;
+  const deviceId = hass.entities?.[entityId]?.device_id;
+  const configEntryId = deviceId ? hass.devices?.[deviceId]?.config_entries?.[0] : undefined;
   if (!configEntryId) {
-    throw new Error(`Entity ${entityId} is missing config_entry_id in the entity registry`);
+    throw new Error(`Could not resolve config_entry_id for ${entityId} via the device registry`);
   }
   return configEntryId;
 }

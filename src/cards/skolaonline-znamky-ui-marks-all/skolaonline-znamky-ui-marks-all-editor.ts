@@ -47,6 +47,27 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
 
         <ha-textfield .label=${localize('editor.title')} .value=${this._config.title ?? ''} @input=${this._titleChanged}></ha-textfield>
 
+        <ha-selector
+          .hass=${this.hass}
+          .selector=${{ number: { min: 12, max: 32, step: 1, mode: 'box', unit_of_measurement: 'px' } }}
+          .value=${this._config.title_font_size ?? 20}
+          .label=${localize('editor.title_font_size')}
+          @value-changed=${this._titleFontSizeChanged}
+        ></ha-selector>
+
+        <ha-selector
+          .hass=${this.hass}
+          .selector=${{ number: { min: 8, max: 24, step: 1, mode: 'box', unit_of_measurement: 'px' } }}
+          .value=${this._config.marks_font_size ?? 14}
+          .label=${localize('editor.marks_font_size')}
+          @value-changed=${this._marksFontSizeChanged}
+        ></ha-selector>
+
+        <ha-formfield class="switch-row" .label=${localize('editor.size_by_weight')}>
+          <ha-switch .checked=${this._config.size_by_weight ?? false} @change=${this._sizeByWeightChanged}></ha-switch>
+        </ha-formfield>
+        <div class="section-description">${localize('editor.size_by_weight_description')}</div>
+
         ${this._renderSubjects(localize)}
       </div>
     `;
@@ -95,6 +116,19 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
     this._updateConfig({ ...this._config, title: value || undefined });
   }
 
+  private _titleFontSizeChanged(e: CustomEvent<{ value: number }>): void {
+    this._updateConfig({ ...this._config, title_font_size: e.detail.value });
+  }
+
+  private _marksFontSizeChanged(e: CustomEvent<{ value: number }>): void {
+    this._updateConfig({ ...this._config, marks_font_size: e.detail.value });
+  }
+
+  private _sizeByWeightChanged(e: Event): void {
+    const checked = (e.target as HTMLInputElement).checked;
+    this._updateConfig({ ...this._config, size_by_weight: checked });
+  }
+
   private _colorChanged(subjectId: string, e: Event): void {
     e.stopPropagation();
     const value = (e.target as HTMLInputElement).value;
@@ -140,6 +174,12 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
       .section-note {
         color: var(--secondary-text-color);
         font-size: 0.9em;
+      }
+
+      .switch-row {
+        display: flex;
+        align-items: center;
+        color: var(--primary-text-color);
       }
 
       .color-swatch {

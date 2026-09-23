@@ -2,6 +2,7 @@ import { html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import setupCustomlocalize from '../../localize';
 import { gradeColor, parseGrade } from '../../utils/grades';
+import { averageWeight, markChipSizeEm } from '../../utils/mark-size';
 import { fetchMarks } from '../../utils/marks-service';
 import { shouldHighlightMark } from '../../utils/new-marks';
 import { orderSubjects } from '../../utils/subjects';
@@ -114,6 +115,18 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
     return attrs ? orderSubjects(attrs, this._config ?? {}) : [];
   }
 
+  // Weight is not on a fixed scale across schools (some use 0.1-1, others
+  // 1-100), so "heavy" and "size by weight" both compare against this
+  // reference (the average weight across the entity's marks) rather than an
+  // absolute number.
+  private get _referenceWeight(): number {
+    const attrs = this._attrs;
+    if (!attrs) {
+      return 0;
+    }
+    return averageWeight(attrs.subjects.flatMap((subject) => subject.marks.map((mark) => mark.weight)));
+  }
+
   protected render(): TemplateResult {
     if (!this._config) {
       return html``;
@@ -125,9 +138,10 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
     }
 
     const average = Number(this.hass.states[this._config.entity].state);
+    const cardStyle = `--soz-title-font-size:${this._config.title_font_size ?? 20}px;--soz-marks-font-size:${this._config.marks_font_size ?? 14}px;`;
 
     return html`
-      <ha-card>
+      <ha-card style=${cardStyle}>
         <div class="header">
           <div>
             <div class="student-name">${this._config.title || attrs.student_name}</div>
@@ -147,24 +161,29 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
   private _renderSubjectRow(subject: OrderedSubject): TemplateResult {
     const shown = [...subject.marks].sort((a, b) => (a.date < b.date ? 1 : -1));
     const extra = subject.count - shown.length;
+    const referenceWeight = this._referenceWeight;
 
     return html`
       <div class="subject-row" style="--subject-color:${subject.color ?? 'var(--primary-color)'}" @click=${() => this._toggleHistory(subject.subject_id)}>
-        <div class="subject-bar"></div>
-        <div class="subject-name">${subject.name}</div>
-        <div class="subject-average" style="color:${gradeColor(subject.average)}">${subject.average.toFixed(2)}</div>
-        <div class="marks">${shown.map((mark) => this._renderMarkChip(mark))} ${extra > 0 ? html`<div class="more-marks">+${extra}</div>` : nothing}</div>
+        <div class="subject-row-top">
+          <div class="subject-name">${subject.name}</div>
+          <div class="subject-average" style="color:${gradeColor(subject.average)}">${subject.average.toFixed(2)}</div>
+        </div>
+        <div class="marks">${shown.map((mark) => this._renderMarkChip(mark, referenceWeight))} ${extra > 0 ? html`<div class="more-marks">+${extra}</div>` : nothing}</div>
       </div>
     `;
   }
 
-  private _renderMarkChip(mark: SkolaOnlineMark): TemplateResult {
+  private _renderMarkChip(mark: SkolaOnlineMark, referenceWeight: number): TemplateResult {
     const grade = parseGrade(mark.value);
     const background = grade === null ? 'var(--disabled-text-color, #9e9e9e)' : gradeColor(grade);
     const isNew = shouldHighlightMark(mark.id, mark.date, this._newMarkIds);
-    const isHeavy = mark.weight > 0.2;
+    const isHeavy = referenceWeight > 0 && mark.weight > referenceWeight;
+    const sizeStyle = this._config?.size_by_weight ? `width:${markChipSizeEm(mark.weight, referenceWeight)}em;height:${markChipSizeEm(mark.weight, referenceWeight)}em;` : '';
     return html`
-      <div class="mark-chip ${isHeavy ? 'heavy' : ''} ${isNew ? 'new' : ''}" style="background:${background}" title="${mark.date.slice(0, 10)} · ${mark.weight}">${mark.value}</div>
+      <div class="mark-chip ${isHeavy ? 'heavy' : ''} ${isNew ? 'new' : ''}" style="background:${background};${sizeStyle}" title="${mark.date.slice(0, 10)} · ${mark.weight}">
+        ${mark.value}
+      </div>
     `;
   }
 

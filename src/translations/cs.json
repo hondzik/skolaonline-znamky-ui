@@ -8,6 +8,10 @@
   "editor": {
     "entity": "Entita (dítě)",
     "title": "Vlastní název (nepovinné)",
+    "title_font_size": "Velikost písma nadpisu",
+    "marks_font_size": "Velikost písma známek",
+    "size_by_weight": "Velikost podle váhy",
+    "size_by_weight_description": "Zvětší čtvereček známky podle její váhy vůči průměrné váze ostatních známek (funguje bez ohledu na to, jakou stupnici vah škola používá).",
     "subjects_heading": "Pořadí a barvy předmětů",
     "subjects_description": "Přetažením změníte pořadí předmětů na kartě, kliknutím na barevný kroužek nastavíte barvu předmětu.",
     "reset_color": "Zrušit vlastní barvu",

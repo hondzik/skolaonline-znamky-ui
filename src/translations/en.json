@@ -8,6 +8,10 @@
   "editor": {
     "entity": "Entity (child)",
     "title": "Custom title (optional)",
+    "title_font_size": "Title font size",
+    "marks_font_size": "Marks font size",
+    "size_by_weight": "Size by weight",
+    "size_by_weight_description": "Scales a mark's chip size based on its weight relative to the average weight of the other marks (works regardless of which weight scale the school uses).",
     "subjects_heading": "Subject order & colors",
     "subjects_description": "Drag to reorder subjects on the card, click the color dot to set a subject's color.",
     "reset_color": "Reset custom color",

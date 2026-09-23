@@ -5,22 +5,38 @@ import type { HomeAssistant } from 'custom-card-helpers';
 function buildHass(callService: ReturnType<typeof vi.fn>): HomeAssistant {
   return {
     entities: {
-      'sensor.child_marks': { entity_id: 'sensor.child_marks', config_entry_id: 'entry123' },
-      'sensor.no_entry_marks': { entity_id: 'sensor.no_entry_marks' },
+      'sensor.child_marks': { entity_id: 'sensor.child_marks', device_id: 'device1' },
+      'sensor.no_device_marks': { entity_id: 'sensor.no_device_marks' },
+      'sensor.orphan_device_marks': { entity_id: 'sensor.orphan_device_marks', device_id: 'device2' },
+      'sensor.no_config_entries_marks': { entity_id: 'sensor.no_config_entries_marks', device_id: 'device3' },
+    },
+    devices: {
+      device1: { id: 'device1', config_entries: ['entry123'] },
+      device3: { id: 'device3', config_entries: [] },
     },
     callService,
   } as unknown as HomeAssistant;
 }
 
 describe('resolveConfigEntryId', () => {
-  it('returns the config_entry_id from the entity registry', () => {
+  it('resolves the config_entry_id via the entity device_id -> device config_entries', () => {
     const hass = buildHass(vi.fn());
     expect(resolveConfigEntryId(hass as unknown as HassWithRegistry, 'sensor.child_marks')).toBe('entry123');
   });
 
-  it('throws when the entity has no config_entry_id', () => {
+  it('throws when the entity has no device_id', () => {
     const hass = buildHass(vi.fn());
-    expect(() => resolveConfigEntryId(hass as unknown as HassWithRegistry, 'sensor.no_entry_marks')).toThrow();
+    expect(() => resolveConfigEntryId(hass as unknown as HassWithRegistry, 'sensor.no_device_marks')).toThrow();
+  });
+
+  it('throws when the device is not in the device registry', () => {
+    const hass = buildHass(vi.fn());
+    expect(() => resolveConfigEntryId(hass as unknown as HassWithRegistry, 'sensor.orphan_device_marks')).toThrow();
+  });
+
+  it('throws when the device has no config_entries', () => {
+    const hass = buildHass(vi.fn());
+    expect(() => resolveConfigEntryId(hass as unknown as HassWithRegistry, 'sensor.no_config_entries_marks')).toThrow();
   });
 });
 
@@ -45,8 +61,8 @@ describe('fetchMarks', () => {
     expect(callService).toHaveBeenCalledWith('skolaonline_znamky', 'get_marks', { config_entry_id: 'entry123', student_id: 'D3006424', subject_id: 'D118763' }, undefined, undefined, true);
   });
 
-  it('rejects when the entity has no config_entry_id', async () => {
+  it('rejects when the entity has no resolvable config_entry_id', async () => {
     const hass = buildHass(vi.fn());
-    await expect(fetchMarks(hass, 'sensor.no_entry_marks', 'D3006424')).rejects.toThrow();
+    await expect(fetchMarks(hass, 'sensor.no_device_marks', 'D3006424')).rejects.toThrow();
   });
 });

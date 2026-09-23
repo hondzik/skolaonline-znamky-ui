@@ -18,7 +18,7 @@ export const SkolaOnlineMarksAllCardStyles = css`
   }
 
   .student-name {
-    font-size: 1.2em;
+    font-size: var(--soz-title-font-size, 1.2em);
     font-weight: 500;
     color: var(--primary-text-color);
   }
@@ -47,10 +47,11 @@ export const SkolaOnlineMarksAllCardStyles = css`
 
   .subject-row {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    gap: 6px;
     padding: 8px 10px;
-    border-radius: 6px;
+    border-radius: 10px;
+    border: 2px solid var(--subject-color, var(--primary-color));
     cursor: pointer;
   }
 
@@ -58,12 +59,10 @@ export const SkolaOnlineMarksAllCardStyles = css`
     background: var(--secondary-background-color, rgba(0, 0, 0, 0.04));
   }
 
-  .subject-bar {
-    width: 4px;
-    align-self: stretch;
-    border-radius: 2px;
-    background: var(--subject-color, var(--primary-color));
-    flex-shrink: 0;
+  .subject-row-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .subject-name {
@@ -87,7 +86,7 @@ export const SkolaOnlineMarksAllCardStyles = css`
     display: flex;
     gap: 4px;
     align-items: center;
-    flex-shrink: 0;
+    flex-wrap: wrap;
   }
 
   .mark-chip {
@@ -98,7 +97,7 @@ export const SkolaOnlineMarksAllCardStyles = css`
     justify-content: center;
     border-radius: 4px;
     color: #fff;
-    font-size: 0.8em;
+    font-size: var(--soz-marks-font-size, 0.8em);
     font-weight: 600;
     position: relative;
   }
@@ -121,7 +120,7 @@ export const SkolaOnlineMarksAllCardStyles = css`
 
   .more-marks {
     color: var(--secondary-text-color);
-    font-size: 0.8em;
+    font-size: var(--soz-marks-font-size, 0.8em);
     padding-left: 2px;
     flex-shrink: 0;
   }

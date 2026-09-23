@@ -6,7 +6,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'json-summary'],
-      include: ['src/utils/grades.ts', 'src/utils/subjects.ts', 'src/utils/marks-service.ts', 'src/utils/new-marks.ts', 'src/localize.ts'],
+      include: ['src/utils/grades.ts', 'src/utils/subjects.ts', 'src/utils/marks-service.ts', 'src/utils/new-marks.ts', 'src/utils/mark-size.ts', 'src/localize.ts'],
       thresholds: {
         lines: 90,
         statements: 90,
