@@ -85,11 +85,6 @@ export const SkolaOnlineMarksAllCardStyles = css`
     cursor: pointer;
   }
 
-  .subject-row-top:hover,
-  .marks:hover {
-    background: var(--secondary-background-color, rgba(0, 0, 0, 0.04));
-  }
-
   .subject-row-top {
     display: flex;
     align-items: center;
