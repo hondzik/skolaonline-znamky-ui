@@ -1,0 +1,13 @@
+node_modules
+.vscode/*
+!.vscode/settings.json
+.DS_Store
+.idea
+*.log
+*.tsbuildinfo
+coverage
+*.bak
+*.swp
+*.tmp
+*.old
+*.orig

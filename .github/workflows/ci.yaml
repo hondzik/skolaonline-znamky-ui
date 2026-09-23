@@ -1,0 +1,64 @@
+name: CI
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: "24"
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build
+              run: npm run build
+
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: "24"
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run tests with coverage gate
+              run: npm test
+
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: "24"
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Lint (TS + Markdown)
+              run: npm run lint:check

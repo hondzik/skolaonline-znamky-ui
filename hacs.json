@@ -1,0 +1,7 @@
+{
+  "name": "Lovelace Cards for skola-online-znamky integration",
+  "render_readme": true,
+  "filename": "skolaonline-znamky-ui.js",
+  "content_in_root": false,
+  "homeassistant": "2026.9.0"
+}
