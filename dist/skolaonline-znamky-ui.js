@@ -57,15 +57,16 @@ var t="https://github.com/hondzik/skolaonline-znamky-ui";function e(t,e,i,s){var
   }
 
   /*
-   * A real border-left, not a colored background peeking out from under an
-   * inset inner element — border-radius rounds a border natively as part of
-   * the same box, so there's no second independently-clipped corner to line
-   * up against and no seam for the color to bleed through.
+   * The colored "border" is really the outer element's own background,
+   * revealed only on the left by the inner element's padding-left. The
+   * outer clips to its own border-radius (overflow: hidden) so the inner
+   * element's square corners are cropped to match instead of being drawn
+   * separately, which is what left color slivers showing through the
+   * top-right/bottom-right corners.
    */
   .subject-row {
-    border-radius: 10px;
-    border-left-style: solid;
-    background: var(--card-background-color, #fff);
+    border-radius: 10px 0px 0px 10px;
+    overflow: hidden;
   }
 
   .subject-row-inner {
@@ -73,6 +74,8 @@ var t="https://github.com/hondzik/skolaonline-znamky-ui";function e(t,e,i,s){var
     flex-direction: column;
     gap: 6px;
     padding: 8px 10px;
+    border-radius: 10px 0px 0px 10px;
+    background: var(--card-background-color, #fff);
   }
 
   .subject-row-top,
@@ -454,7 +457,7 @@ var t="https://github.com/hondzik/skolaonline-znamky-ui";function e(t,e,i,s){var
         <div class="subjects">${this._visibleSubjects.map(e=>this._renderSubjectRow(e,t))}</div>
       </ha-card>
     `}_renderSubjectRow(t,e){const i=[...t.marks].sort((t,e)=>t.date<e.date?1:-1),s=t.count-i.length,r=this._referenceWeight,o=this._config?.border_width??8,n=()=>this._toggleHistory(t.subject_id);return W`
-      <div class="subject-row" style="border-left-color:${t.color??"var(--primary-color)"};border-left-width:${o}px">
+      <div class="subject-row" style="background:${t.color??"var(--primary-color)"};padding-left:${o}px">
         <div class="subject-row-inner">
           <div class="subject-row-top" @click=${n}>
             <div class="subject-name">${t.name}</div>
@@ -481,4 +484,4 @@ var t="https://github.com/hondzik/skolaonline-znamky-ui";function e(t,e,i,s){var
         <span class="history-weight">${t.weight}</span>
         <span class="history-theme">${t.theme||t.verbal_evaluation||""}</span>
       </div>
-    `}static get styles(){return Mt}};e([ut({attribute:!1})],Rt.prototype,"hass",void 0),e([_t()],Rt.prototype,"_config",void 0),e([_t()],Rt.prototype,"_expandedSubjectId",void 0),e([_t()],Rt.prototype,"_historyLoading",void 0),e([_t()],Rt.prototype,"_historyError",void 0),e([_t()],Rt.prototype,"_marksCache",void 0),e([_t()],Rt.prototype,"_newMarkIds",void 0),e([_t()],Rt.prototype,"_refreshing",void 0),Rt=e([ht(Ot)],Rt),window.customCards=window.customCards||[],window.customCards.push({type:Ot,name:"Škola OnLine – Známky",description:"Karta se známkami dítěte ze zálohové integrace skolaonline_znamky.",preview:!0,documentationURL:"https://github.com/hondzik/skolaonline-znamky-ui"}),function(){const e="padding: 2px 4px; font-family: Roboto,Verdana,Geneva,sans-serif;",i=`background-color: rgb(255, 127, 15); color: rgb(0, 0, 49); ${e}`,s=`background-color: rgb(0, 0, 49); color: rgb(255, 127, 15); ${e}`;console.groupCollapsed("%cLovelace Cards for skola-online-znamky integration%c0.1.0",i,s),console.info("Lovelace Cards for skola-online-znamky integration"),console.info(`Github: ${t}`),console.groupEnd()}();
+    `}static get styles(){return Mt}};e([ut({attribute:!1})],Rt.prototype,"hass",void 0),e([_t()],Rt.prototype,"_config",void 0),e([_t()],Rt.prototype,"_expandedSubjectId",void 0),e([_t()],Rt.prototype,"_historyLoading",void 0),e([_t()],Rt.prototype,"_historyError",void 0),e([_t()],Rt.prototype,"_marksCache",void 0),e([_t()],Rt.prototype,"_newMarkIds",void 0),e([_t()],Rt.prototype,"_refreshing",void 0),Rt=e([ht(Ot)],Rt),window.customCards=window.customCards||[],window.customCards.push({type:Ot,name:"Škola OnLine – Známky",description:"Karta se známkami dítěte ze zálohové integrace skolaonline_znamky.",preview:!0,documentationURL:"https://github.com/hondzik/skolaonline-znamky-ui"}),function(){const e="padding: 2px 4px; font-family: Roboto,Verdana,Geneva,sans-serif;",i=`background-color: rgb(255, 127, 15); color: rgb(0, 0, 49); ${e}`,s=`background-color: rgb(0, 0, 49); color: rgb(255, 127, 15); ${e}`;console.groupCollapsed("%cLovelace Cards for skola-online-znamky integration%c0.1.1",i,s),console.info("Lovelace Cards for skola-online-znamky integration"),console.info(`Github: ${t}`),console.groupEnd()}();
