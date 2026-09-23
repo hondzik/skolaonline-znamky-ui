@@ -67,7 +67,7 @@ export const SkolaOnlineMarksAllCardStyles = css`
    * top-right/bottom-right corners.
    */
   .subject-row {
-    border-radius: 10px;
+    border-radius: 10px 0px 0px 10px;
     overflow: hidden;
   }
 
@@ -76,6 +76,7 @@ export const SkolaOnlineMarksAllCardStyles = css`
     flex-direction: column;
     gap: 6px;
     padding: 8px 10px;
+    border-radius: 10px 0px 0px 10px;
     background: var(--card-background-color, #fff);
   }
 
@@ -192,6 +193,13 @@ export const SkolaOnlineMarksAllCardStyles = css`
   .history-value {
     font-weight: 600;
     flex-shrink: 0;
+    width: 2em;
+  }
+
+  .history-weight {
+    color: var(--secondary-text-color);
+    flex-shrink: 0;
+    width: 2.5em;
   }
 
   .history-theme {

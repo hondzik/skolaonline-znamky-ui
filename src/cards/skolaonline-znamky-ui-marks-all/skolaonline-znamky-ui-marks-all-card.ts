@@ -1,6 +1,7 @@
 import { html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import setupCustomlocalize from '../../localize';
+import { formatMarkDate } from '../../utils/format-date';
 import { gradeColor, parseGrade } from '../../utils/grades';
 import { averageWeight, markChipSizeEm } from '../../utils/mark-size';
 import { fetchMarks, refreshMarks } from '../../utils/marks-service';
@@ -317,8 +318,9 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
     const color = grade === null ? 'inherit' : gradeColor(grade);
     return html`
       <div class="history-row">
-        <span class="history-date">${mark.date.slice(0, 10)}</span>
+        <span class="history-date">${formatMarkDate(mark.date, this.hass?.locale.language)}</span>
         <span class="history-value" style="color:${color}">${mark.value}</span>
+        <span class="history-weight">${mark.weight}</span>
         <span class="history-theme">${mark.theme || mark.verbal_evaluation || ''}</span>
       </div>
     `;
