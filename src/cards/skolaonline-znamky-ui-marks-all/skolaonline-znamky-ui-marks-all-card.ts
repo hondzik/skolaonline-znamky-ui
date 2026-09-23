@@ -3,11 +3,12 @@ import { customElement, property, state } from 'lit/decorators.js';
 import setupCustomlocalize from '../../localize';
 import { formatMarkDate } from '../../utils/format-date';
 import { gradeColor, parseGrade } from '../../utils/grades';
-import { averageWeight, markChipSizeEm } from '../../utils/mark-size';
+import { averageWeight, markChipSizeEm, weightRange } from '../../utils/mark-size';
 import { fetchMarks, refreshMarks } from '../../utils/marks-service';
 import { shouldHighlightMark } from '../../utils/new-marks';
 import { orderSubjects } from '../../utils/subjects';
 import { SkolaOnlineMarksAllCardStyles } from './skolaonline-znamky-ui-marks-all-styles';
+import type { WeightRange } from '../../utils/mark-size';
 import type { OrderedSubject } from '../../utils/subjects';
 import type { HomeAssistant } from 'custom-card-helpers';
 import type { HassEventBase } from 'home-assistant-js-websocket';
@@ -137,7 +138,7 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
   }
 
   // Weight is not on a fixed scale across schools (some use 0.1-1, others
-  // 1-100), so "heavy" and "size by weight" both compare against this
+  // 1-100), so the "heavier than usual" indicator compares against this
   // reference (the average weight across the entity's marks) rather than an
   // absolute number.
   private get _referenceWeight(): number {
@@ -146,6 +147,17 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
       return 0;
     }
     return averageWeight(attrs.subjects.flatMap((subject) => subject.marks.map((mark) => mark.weight)));
+  }
+
+  // The card-wide min/max weight, used to size mark chips by weight. Using
+  // one shared range for the whole card (not per subject) is what makes a
+  // given weight render the same size everywhere.
+  private get _weightRange(): WeightRange {
+    const attrs = this._attrs;
+    if (!attrs) {
+      return { min: 0, max: 0 };
+    }
+    return weightRange(attrs.subjects.flatMap((subject) => subject.marks.map((mark) => mark.weight)));
   }
 
   private get _allMarks(): SkolaOnlineFullMark[] {
@@ -199,6 +211,7 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
     const shown = [...subject.marks].sort((a, b) => (a.date < b.date ? 1 : -1));
     const extra = subject.count - shown.length;
     const referenceWeight = this._referenceWeight;
+    const range = this._weightRange;
     const borderWidth = this._config?.border_width ?? 8;
     const toggle = () => this._toggleHistory(subject.subject_id);
 
@@ -214,7 +227,7 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
           <div class="marks" @click=${toggle}>
             ${
               shown.length
-                ? html`${shown.map((mark) => this._renderMarkChip(mark, referenceWeight))} ${extra > 0 ? html`<div class="more-marks">+${extra}</div>` : nothing}`
+                ? html`${shown.map((mark) => this._renderMarkChip(mark, referenceWeight, range))} ${extra > 0 ? html`<div class="more-marks">+${extra}</div>` : nothing}`
                 : html`<div class="no-marks">${localize('card.no_marks')}</div>`
             }
           </div>
@@ -231,17 +244,19 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
     `;
   }
 
-  private _renderMarkChip(mark: SkolaOnlineMark, referenceWeight: number): TemplateResult {
+  private _renderMarkChip(mark: SkolaOnlineMark, referenceWeight: number, range: WeightRange): TemplateResult {
     const grade = parseGrade(mark.value);
     const isVerbal = grade === null;
     const background = isVerbal ? 'var(--disabled-text-color, #9e9e9e)' : gradeColor(grade);
     const isNew = shouldHighlightMark(mark.id, mark.date, this._newMarkIds);
-    // A verbal evaluation's own weight isn't meaningful for sizing (it isn't
-    // part of the weighted average), so it's sized as if it were exactly at
-    // the reference weight instead of using its own weight value.
-    const sizeWeight = isVerbal ? referenceWeight : mark.weight;
-    const isHeavy = referenceWeight > 0 && sizeWeight > referenceWeight;
-    const sizeStyle = this._config?.size_by_weight ? `width:${markChipSizeEm(sizeWeight, referenceWeight)}em;height:${markChipSizeEm(sizeWeight, referenceWeight)}em;` : '';
+    // A verbal evaluation's own weight isn't meaningful (it isn't part of
+    // the weighted average), so for the "heavier than usual" indicator it's
+    // treated as exactly at the reference weight (never heavy), and for
+    // sizing it's treated as the midpoint of the observed range (an
+    // "average-ish" size) instead of using its own weight value.
+    const isHeavy = referenceWeight > 0 && !isVerbal && mark.weight > referenceWeight;
+    const sizeWeight = isVerbal ? (range.min + range.max) / 2 : mark.weight;
+    const sizeStyle = this._config?.size_by_weight ? `width:${markChipSizeEm(sizeWeight, range.min, range.max)}em;height:${markChipSizeEm(sizeWeight, range.min, range.max)}em;` : '';
     return html`
       <div class="mark-chip ${isHeavy ? 'heavy' : ''} ${isNew ? 'new' : ''}" style="background:${background};${sizeStyle}" title="${mark.date.slice(0, 10)} · ${mark.weight}">
         ${mark.value}

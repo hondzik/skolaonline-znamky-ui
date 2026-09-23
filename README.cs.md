@@ -13,6 +13,8 @@ Vlastní Lovelace **karta** pro Home Assistant, která zobrazuje známky dítět
 **Škola OnLine** — barevně zvýrazněný průměr, řádek na předmět s posledními známkami a na
 vyžádání celou historii.
 
+![Karta zobrazující předměty dítěte, známky a rozbalenou historii](docs/images/card.png)
+
 ## Obsah <!-- omit from toc -->
 
 - [Jak to funguje](#jak-to-funguje)
@@ -100,7 +102,7 @@ Všechny volby lze nastavit přes YAML i přes grafický editor:
 | `title_font_size` | number | `20` | Velikost písma (px) nadpisu v hlavičce. |
 | `subject_font_size` | number | `15` | Velikost písma (px) názvu předmětu. |
 | `marks_font_size` | number | `14` | Velikost písma (px) čtverečků se známkami a odznaku "+N dalších". |
-| `size_by_weight` | boolean | `false` | Zvětší čtvereček známky podle její váhy vůči průměrné váze zobrazených známek (slovní hodnocení se velikostí chová jako tento průměr, protože jeho vlastní váha nemá smysl). Funguje bez ohledu na to, jakou stupnici vah škola používá (např. 0,1–1 nebo 1–100). |
+| `size_by_weight` | boolean | `false` | Zvětší čtvereček známky podle toho, kde se její váha nachází mezi nejlehčí a nejtěžší váhou na kartě (slovní hodnocení se velikostí chová jako střed tohoto rozsahu, protože jeho vlastní váha nemá smysl). Funguje bez ohledu na to, jakou stupnici vah škola používá (např. 0,1–1 nebo 1–100). |
 | `border_width` | number | `8` | Šířka (px) barevného pruhu vlevo u každého předmětu. |
 | `show_empty_subjects` | boolean | `true` | Zda zobrazovat předměty, které v tomto pololetí ještě nemají žádnou známku. |
 | `subject_order` | list | pořadí z atributu | ID předmětů v pořadí, v jakém se mají zobrazovat. |
@@ -110,7 +112,7 @@ Všechny volby lze nastavit přes YAML i přes grafický editor:
 ```yaml
 type: custom:skolaonline-znamky-ui-marks-all-card
 entity: sensor.<dítě>_marks
-title: 'Tomáš'
+title: 'Dítě'
 title_font_size: 22
 subject_font_size: 16
 marks_font_size: 16
@@ -127,6 +129,8 @@ subject_hidden:
 ```
 
 ## Použití grafického editoru
+
+![Karta Config v grafickém editoru s živým náhledem karty vpravo](docs/images/configuration-editor.png)
 
 Místo úpravy YAML otevřete grafický editor karty (ikona tužky), vyberte entitu dítěte, nastavte
 vlastní název, posuvníkem doladíte všechny tři velikosti písma i šířku levého pruhu a přepínačem

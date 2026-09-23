@@ -13,6 +13,8 @@ the [`skolaonline_znamky`](https://github.com/hondzik/skolaonline-znamky) integr
 Czech school information system **Škola OnLine** — a colored average, a row per subject with
 its recent marks, and an on-demand full history.
 
+![The card showing a student's subjects, marks and an expanded history row](docs/images/card.png)
+
 ## Table of contents <!-- omit from toc -->
 
 - [How it works](#how-it-works)
@@ -101,7 +103,7 @@ All options are settable either through YAML or the visual editor:
 | `title_font_size` | number | `20` | Font size (px) of the header title. |
 | `subject_font_size` | number | `15` | Font size (px) of each subject's name. |
 | `marks_font_size` | number | `14` | Font size (px) of the mark chips and the "+N more" badge. |
-| `size_by_weight` | boolean | `false` | Scale a mark chip's size by its weight, relative to the average weight of the marks shown (verbal evaluations are sized as if at that average, since their own weight isn't meaningful). Works regardless of which weight scale the school uses (e.g. 0.1-1 or 1-100). |
+| `size_by_weight` | boolean | `false` | Scale a mark chip's size by where its weight falls between the lightest and heaviest weight shown on the card (verbal evaluations are sized as if at the midpoint, since their own weight isn't meaningful). Works regardless of which weight scale the school uses (e.g. 0.1-1 or 1-100). |
 | `border_width` | number | `8` | Width (px) of the colored bar on the left of each subject row. |
 | `show_empty_subjects` | boolean | `true` | Whether to show subjects that have no marks yet this semester. |
 | `subject_order` | list | attribute order | Subject ids in the order they should be displayed. |
@@ -128,6 +130,8 @@ subject_hidden:
 ```
 
 ## Using the visual editor
+
+![The visual editor's config tab, with a live preview of the card on the right](docs/images/configuration-editor.png)
 
 Instead of editing YAML, open the card's visual editor (pencil icon) to pick the child's entity,
 set a custom title, adjust the three font sizes and the left bar's width with a slider each, and

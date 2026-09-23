@@ -14,7 +14,7 @@
     "marks_font_size": "Marks font size",
     "border_width": "Subject color bar width",
     "size_by_weight": "Size by weight",
-    "size_by_weight_description": "Scales a mark's chip size based on its weight relative to the average weight of the other marks (works regardless of which weight scale the school uses).",
+    "size_by_weight_description": "Scales a mark's chip size based on where its weight falls between the lightest and heaviest weight shown (works regardless of which weight scale the school uses).",
     "show_empty_subjects": "Show subjects with no marks yet",
     "subjects_heading": "Subject order & colors",
     "subjects_description": "Drag to reorder subjects on the card, click the color dot to set a subject's color.",

@@ -14,7 +14,7 @@
     "marks_font_size": "Velikost písma známek",
     "border_width": "Šířka barevného pruhu předmětu",
     "size_by_weight": "Velikost podle váhy",
-    "size_by_weight_description": "Zvětší čtvereček známky podle její váhy vůči průměrné váze ostatních známek (funguje bez ohledu na to, jakou stupnici vah škola používá).",
+    "size_by_weight_description": "Zvětší čtvereček známky podle toho, kde se její váha nachází mezi nejlehčí a nejtěžší váhou na kartě (funguje bez ohledu na to, jakou stupnici vah škola používá).",
     "show_empty_subjects": "Zobrazovat předměty bez existujících známek",
     "subjects_heading": "Pořadí a barvy předmětů",
     "subjects_description": "Přetažením změníte pořadí předmětů na kartě, kliknutím na barevný kroužek nastavíte barvu předmětu.",
