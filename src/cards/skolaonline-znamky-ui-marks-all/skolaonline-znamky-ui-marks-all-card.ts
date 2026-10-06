@@ -257,8 +257,9 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
     const isHeavy = referenceWeight > 0 && !isVerbal && mark.weight > referenceWeight;
     const sizeWeight = isVerbal ? (range.min + range.max) / 2 : mark.weight;
     const sizeStyle = this._config?.size_by_weight ? `width:${markChipSizeEm(sizeWeight, range.min, range.max)}em;height:${markChipSizeEm(sizeWeight, range.min, range.max)}em;` : '';
+    const formattedDate = formatMarkDate(mark.date, this.hass?.locale.language);
     return html`
-      <div class="mark-chip ${isHeavy ? 'heavy' : ''} ${isNew ? 'new' : ''}" style="background:${background};${sizeStyle}" title="${mark.date.slice(0, 10)} · ${mark.weight}">
+      <div class="mark-chip ${isHeavy ? 'heavy' : ''} ${isNew ? 'new' : ''}" style="background:${background};${sizeStyle}" title="${formattedDate} - ${mark.weight}">
         ${mark.value}
       </div>
     `;
