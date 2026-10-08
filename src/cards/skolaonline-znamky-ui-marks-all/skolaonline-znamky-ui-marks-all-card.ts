@@ -16,6 +16,12 @@ import type { CSSResultGroup, PropertyValues, TemplateResult } from 'lit';
 import './skolaonline-znamky-ui-marks-all-editor';
 
 const CARD_TAG = 'skolaonline-znamky-ui-marks-all-card';
+const CARD_NAME = 'Škola OnLine – Známky';
+
+function isSkolaOnlineEntity(hass: HomeAssistant, entityId: string): boolean {
+  return (hass as unknown as HassWithRegistry).entities?.[entityId]?.platform === 'skolaonline_znamky';
+}
+
 // get_marks returns the full mark list for the whole semester regardless of
 // the subject_id filter, so the card fetches it once and reuses it for every
 // subject's expanded row — refetched only once this cache goes stale.
@@ -69,12 +75,15 @@ export class SkolaOnlineMarksAllCard extends LitElement implements LovelaceCard 
   }
 
   public static getStubConfig(hass: HomeAssistant, entities: string[], entitiesFallback: string[]): SkolaOnlineMarksCardConfig {
-    const registry = hass as unknown as HassWithRegistry;
-    const entityId = [...entities, ...entitiesFallback].find((id) => registry.entities?.[id]?.platform === 'skolaonline_znamky');
+    const entityId = [...entities, ...entitiesFallback].find((id) => isSkolaOnlineEntity(hass, id));
     if (!entityId) {
       throw new Error('No skolaonline_znamky entity available');
     }
     return { type: `custom:${CARD_TAG}`, entity: entityId };
+  }
+
+  public static getEntitySuggestion(hass: HomeAssistant, entityId: string): { label: string; config: SkolaOnlineMarksCardConfig } | null {
+    return isSkolaOnlineEntity(hass, entityId) ? { label: CARD_NAME, config: { type: `custom:${CARD_TAG}`, entity: entityId } } : null;
   }
 
   public connectedCallback(): void {
@@ -354,8 +363,10 @@ declare global {
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: CARD_TAG,
-  name: 'Škola OnLine – Známky',
+  name: CARD_NAME,
   description: 'Karta se známkami dítěte ze zálohové integrace skolaonline_znamky.',
   preview: true,
   documentationURL: 'https://github.com/hondzik/skolaonline-znamky-ui',
+  // suggested in the "add card" dialog after picking an entity (getStubConfig only serves the "all cards" list)
+  getEntitySuggestion: (hass, entityId) => SkolaOnlineMarksAllCard.getEntitySuggestion(hass, entityId),
 });

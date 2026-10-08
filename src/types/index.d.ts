@@ -13,6 +13,7 @@ declare global {
     description: string;
     preview?: boolean;
     documentationURL?: string;
+    getEntitySuggestion?: (hass: HomeAssistant, entityId: string) => { label?: string; config: LovelaceCardConfig } | null;
   }
 
   // Minimal shape of the entity/device registry display data the frontend
