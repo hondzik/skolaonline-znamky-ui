@@ -364,7 +364,7 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: CARD_TAG,
   name: CARD_NAME,
-  description: 'Karta se známkami dítěte ze zálohové integrace skolaonline_znamky.',
+  description: 'Karta se známkami dítěte z integrace skolaonline_znamky.',
   preview: true,
   documentationURL: 'https://github.com/hondzik/skolaonline-znamky-ui',
   // suggested in the "add card" dialog after picking an entity (getStubConfig only serves the "all cards" list)
