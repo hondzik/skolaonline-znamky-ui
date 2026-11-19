@@ -10,7 +10,7 @@ import { orderSubjects } from '../../utils/subjects';
 import { SkolaOnlineMarksAllCardStyles } from './skolaonline-znamky-ui-marks-all-styles';
 import type { WeightRange } from '../../utils/mark-size';
 import type { OrderedSubject } from '../../utils/subjects';
-import type { HomeAssistant } from 'custom-card-helpers';
+import type { HomeAssistant, LovelaceCard } from 'custom-card-helpers';
 import type { HassEventBase } from 'home-assistant-js-websocket';
 import type { CSSResultGroup, PropertyValues, TemplateResult } from 'lit';
 import './skolaonline-znamky-ui-marks-all-editor';
@@ -19,7 +19,7 @@ const CARD_TAG = 'skolaonline-znamky-ui-marks-all-card';
 const CARD_NAME = 'Škola OnLine – Známky';
 
 function isSkolaOnlineEntity(hass: HomeAssistant, entityId: string): boolean {
-  return (hass as unknown as HassWithRegistry).entities?.[entityId]?.platform === 'skolaonline_znamky';
+  return hass.entities?.[entityId]?.platform === 'skolaonline_znamky';
 }
 
 // get_marks returns the full mark list for the whole semester regardless of

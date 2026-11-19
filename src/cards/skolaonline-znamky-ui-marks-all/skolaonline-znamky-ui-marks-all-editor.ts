@@ -1,3 +1,4 @@
+import { fireEvent } from 'custom-card-helpers';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import '../../components/so-sortable-list/so-sortable-list';
@@ -5,13 +6,13 @@ import setupCustomlocalize from '../../localize';
 import { orderSubjects } from '../../utils/subjects';
 import type { SoSortableListItem } from '../../components/so-sortable-list/so-sortable-list';
 import type { OrderedSubject } from '../../utils/subjects';
-import type { HomeAssistant } from 'custom-card-helpers';
+import type { HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import type { CSSResultGroup, TemplateResult } from 'lit';
 
 const DEFAULT_SUBJECT_COLOR = '#3f51b5';
 
 @customElement('skolaonline-znamky-ui-marks-all-editor')
-export class SkolaOnlineMarksAllEditor extends LitElement {
+export class SkolaOnlineMarksAllEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false })
   public hass?: HomeAssistant;
 
@@ -209,7 +210,7 @@ export class SkolaOnlineMarksAllEditor extends LitElement {
 
   private _updateConfig(config: SkolaOnlineMarksCardConfig): void {
     this._config = config;
-    this.dispatchEvent(new CustomEvent('config-changed', { detail: { config }, bubbles: true, composed: true }));
+    fireEvent(this, 'config-changed', { config });
   }
 
   public static get styles(): CSSResultGroup {

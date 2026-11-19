@@ -1,4 +1,4 @@
-import type { HomeAssistant } from 'custom-card-helpers';
+import type { DeviceRegistryEntry, HomeAssistant, LovelaceCardConfig } from 'custom-card-helpers';
 
 export {};
 
@@ -16,47 +16,12 @@ declare global {
     getEntitySuggestion?: (hass: HomeAssistant, entityId: string) => { label?: string; config: LovelaceCardConfig } | null;
   }
 
-  // Minimal shape of the entity/device registry display data the frontend
-  // attaches to hass (missing from custom-card-helpers' types). This is the
-  // lightweight display registry, not the full entity_registry/device_registry
-  // records — it does NOT carry config_entry_id on the entity itself, only
-  // device_id; config_entry_id has to be resolved via the device instead.
-  interface EntityRegistryDisplayEntry {
-    entity_id: string;
-    platform?: string;
-    device_id?: string;
-    name?: string;
-  }
-
-  interface DeviceRegistryDisplayEntry {
-    id: string;
-    name?: string;
-    name_by_user?: string;
-    config_entries?: string[];
-  }
-
-  type HassWithRegistry = HomeAssistant & {
-    entities?: Record<string, EntityRegistryDisplayEntry>;
-    devices?: Record<string, DeviceRegistryDisplayEntry>;
+  // hass.entities (with platform and device_id) comes typed from custom-card-helpers; its device registry entry lacks `config_entries`,
+  // which the lightweight device registry display data does carry and which is how the config_entry_id of the account is found
+  // (the entity registry display data has no config_entry_id).
+  type HassWithDeviceConfigEntries = HomeAssistant & {
+    devices?: Record<string, DeviceRegistryEntry & { config_entries?: string[] }>;
   };
-
-  // custom-card-helpers' HomeAssistant.callService only models the 4-arg,
-  // fire-and-forget shape. get_marks is SupportsResponse.ONLY, so it must be
-  // called with returnResponse=true — widen the signature for that one call site.
-  interface HomeAssistantServiceCallWithResponse {
-    callService: (domain: string, service: string, serviceData?: Record<string, unknown>, target?: undefined, notifyOnError?: boolean, returnResponse?: boolean) => Promise<unknown>;
-  }
-
-  interface LovelaceCardConfig {
-    type: string;
-    [key: string]: unknown;
-  }
-
-  interface LovelaceCard extends HTMLElement {
-    hass?: HomeAssistant;
-    setConfig(config: LovelaceCardConfig): void;
-    getCardSize?(): number | Promise<number>;
-  }
 
   // -- domain-specific types for sensor.<student>_marks --------------------
 
@@ -124,10 +89,9 @@ declare global {
     marks: SkolaOnlineFullMark[];
   }
 
-  // Shape of the resolved promise when callService is invoked with
-  // returnResponse=true: the actual service response is nested under
-  // `response`, not returned directly (the top-level object also carries
-  // `context`, which the card has no use for).
+  // Shape of what a call_service websocket message with return_response=true
+  // resolves to: the actual service response is nested under `response`
+  // (the top-level object also carries `context`, which the card has no use for).
   interface HomeAssistantServiceCallResponseEnvelope<T> {
     response: T;
   }

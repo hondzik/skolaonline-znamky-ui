@@ -10,7 +10,7 @@ import type { HomeAssistant } from 'custom-card-helpers';
  * hass.devices[deviceId].config_entries[0], which the lightweight device
  * registry display data does carry.
  */
-export function resolveConfigEntryId(hass: HassWithRegistry, entityId: string): string {
+export function resolveConfigEntryId(hass: HassWithDeviceConfigEntries, entityId: string): string {
   const deviceId = hass.entities?.[entityId]?.device_id;
   const configEntryId = deviceId ? hass.devices?.[deviceId]?.config_entries?.[0] : undefined;
   if (!configEntryId) {
@@ -30,17 +30,23 @@ export function resolveConfigEntryId(hass: HassWithRegistry, entityId: string): 
  * caches the result instead of re-fetching per subject.
  */
 export async function fetchMarks(hass: HomeAssistant, entityId: string, studentId: string): Promise<SkolaOnlineFullMark[]> {
-  const configEntryId = resolveConfigEntryId(hass as unknown as HassWithRegistry, entityId);
+  const configEntryId = resolveConfigEntryId(hass, entityId);
 
   const serviceData: Record<string, string> = {
     config_entry_id: configEntryId,
     student_id: studentId,
   };
 
-  const result = await (hass as unknown as HomeAssistantServiceCallWithResponse).callService('skolaonline_znamky', 'get_marks', serviceData, undefined, undefined, true);
-  // callService with returnResponse=true resolves to { context, response },
-  // not the service response itself — the marks are nested under `response`.
-  return (result as HomeAssistantServiceCallResponseEnvelope<SkolaOnlineGetMarksResponse>).response.marks;
+  // hass.callService has no return_response parameter in custom-card-helpers' types, so the websocket message is sent directly. It resolves
+  // to { context, response }, not the service response itself — the marks are nested under `response`.
+  const result = await hass.callWS<HomeAssistantServiceCallResponseEnvelope<SkolaOnlineGetMarksResponse>>({
+    type: 'call_service',
+    domain: 'skolaonline_znamky',
+    service: 'get_marks',
+    service_data: serviceData,
+    return_response: true,
+  });
+  return result.response.marks;
 }
 
 /**

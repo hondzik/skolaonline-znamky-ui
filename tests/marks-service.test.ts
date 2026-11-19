@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { fetchMarks, refreshMarks, resolveConfigEntryId } from '../src/utils/marks-service';
 import type { HomeAssistant } from 'custom-card-helpers';
 
-function buildHass(callService: ReturnType<typeof vi.fn>): HomeAssistant {
+function buildHass(callService: ReturnType<typeof vi.fn>, callWS: ReturnType<typeof vi.fn> = vi.fn()): HomeAssistant {
   return {
     entities: {
       'sensor.child_marks': { entity_id: 'sensor.child_marks', device_id: 'device1' },
@@ -15,42 +15,43 @@ function buildHass(callService: ReturnType<typeof vi.fn>): HomeAssistant {
       device3: { id: 'device3', config_entries: [] },
     },
     callService,
+    callWS,
   } as unknown as HomeAssistant;
 }
 
 describe('resolveConfigEntryId', () => {
   it('resolves the config_entry_id via the entity device_id -> device config_entries', () => {
     const hass = buildHass(vi.fn());
-    expect(resolveConfigEntryId(hass as unknown as HassWithRegistry, 'sensor.child_marks')).toBe('entry123');
+    expect(resolveConfigEntryId(hass as unknown as HassWithDeviceConfigEntries, 'sensor.child_marks')).toBe('entry123');
   });
 
   it('throws when the entity has no device_id', () => {
     const hass = buildHass(vi.fn());
-    expect(() => resolveConfigEntryId(hass as unknown as HassWithRegistry, 'sensor.no_device_marks')).toThrow();
+    expect(() => resolveConfigEntryId(hass as unknown as HassWithDeviceConfigEntries, 'sensor.no_device_marks')).toThrow();
   });
 
   it('throws when the device is not in the device registry', () => {
     const hass = buildHass(vi.fn());
-    expect(() => resolveConfigEntryId(hass as unknown as HassWithRegistry, 'sensor.orphan_device_marks')).toThrow();
+    expect(() => resolveConfigEntryId(hass as unknown as HassWithDeviceConfigEntries, 'sensor.orphan_device_marks')).toThrow();
   });
 
   it('throws when the device has no config_entries', () => {
     const hass = buildHass(vi.fn());
-    expect(() => resolveConfigEntryId(hass as unknown as HassWithRegistry, 'sensor.no_config_entries_marks')).toThrow();
+    expect(() => resolveConfigEntryId(hass as unknown as HassWithDeviceConfigEntries, 'sensor.no_config_entries_marks')).toThrow();
   });
 });
 
 describe('fetchMarks', () => {
-  it('calls skolaonline_znamky.get_marks with returnResponse=true', async () => {
-    const callService = vi.fn().mockResolvedValue({
+  it('calls skolaonline_znamky.get_marks with return_response=true over the websocket', async () => {
+    const callWS = vi.fn().mockResolvedValue({
       context: { id: 'ctx1' },
       response: { marks: [{ id: 'M1', subject_id: 'S1', subject_name: 'Fyzika', value: '1', weight: 0.2, date: '2026-09-22T00:00:00', theme: 'Kmity', verbal_evaluation: '', is_points: false }] },
     });
-    const hass = buildHass(callService);
+    const hass = buildHass(vi.fn(), callWS);
 
     const marks = await fetchMarks(hass, 'sensor.child_marks', 'D3006424');
 
-    expect(callService).toHaveBeenCalledWith('skolaonline_znamky', 'get_marks', { config_entry_id: 'entry123', student_id: 'D3006424' }, undefined, undefined, true);
+    expect(callWS).toHaveBeenCalledWith({ type: 'call_service', domain: 'skolaonline_znamky', service: 'get_marks', service_data: { config_entry_id: 'entry123', student_id: 'D3006424' }, return_response: true });
     expect(marks).toHaveLength(1);
     expect(marks[0].theme).toBe('Kmity');
   });
